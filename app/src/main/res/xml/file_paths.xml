@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Permite guardar fotos temporales tomadas por la cámara en el cache de la app -->
+    <cache-path name="camera_photos" path="." />
+</paths>

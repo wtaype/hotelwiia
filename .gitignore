@@ -1,0 +1,85 @@
+# ============================================================
+# 🛡️ HotelWii Android Git Ignore Policy
+# Protege contra fugas de API Keys, llaves locales y binarios pesados
+# ============================================================
+
+# ─── 🔑 Secrets & Environment Variables ────────────────────
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.env.*
+!.env.example
+!.env.template
+
+# ─── 📸 Local Scripts & Screenshots ─────────────────────────
+wipublicar.ps1
+wicapturar.ps1
+/window.xml
+
+# ─── ⚡ Supabase ───────────────────────────────────────────
+supabase/.temp/
+supabase/.env
+**/supabase/functions/.env
+
+# ─── ☁️ Cloudflare & Serverless ───────────────────────────
+.dev.vars
+.cloudflare/
+.wrangler/
+wrangler.secrets.toml
+
+# ─── 🚀 Google Cloud & Firebase ───────────────────────────
+google-services.json
+**/google-services.json
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+service-account*.json
+gcp-key*.json
+firebase-debug.log
+.firebase/
+
+# ─── 🔐 Android Secrets & Signing Keys ────────────────────
+local.properties
+keystore.properties
+signing.properties
+secring.gpg
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+*.crt
+
+# ─── 📦 Build Outputs & Heavy Binaries ─────────────────────
+build/
+**/build/
+.gradle/
+.kotlin/
+.cxx/
+.externalNativeBuild/
+captures/
+.captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.hprof
+*.prof
+*.trace
+*.log
+
+# ─── 💻 IDE & System Junk ─────────────────────────────────
+.idea/
+*.iml
+.navigation/
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+
+# ─── 🤖 Tooling & Agents ───────────────────────────────────
+.agents/
+skills-lock.json
+scratch/
