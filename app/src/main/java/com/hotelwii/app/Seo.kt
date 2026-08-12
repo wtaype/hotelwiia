@@ -96,10 +96,12 @@ object Seo {
             key = "cuenta",
             nombre = "Cuenta",
             titulo = "Perfil y Configuración",
-            subtitulo = "Ajustes de usuario y preferencias del hotel",
+            subtitulo = "Ajustes de usuario, perfil y preferencias del hotel",
             icono = WiIcons.Person,
             tabs = listOf(
+                MetaTab("General", Icons.Rounded.Home),
                 MetaTab("Perfil", Icons.Rounded.Person),
+                MetaTab("Seguridad", Icons.Rounded.Lock),
                 MetaTab("Ajustes", Icons.Rounded.Settings)
             ),
             mostrarNavBottom = true,

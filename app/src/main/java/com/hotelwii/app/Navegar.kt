@@ -3,7 +3,11 @@ package com.hotelwii.app
 import androidx.compose.runtime.Composable
 import com.hotelwii.app.components.Modulo
 import com.hotelwii.core.kicss.WiTemaColors
+import com.hotelwii.core.kicss.obtenerTemaColors
+import com.hotelwii.feature.auth.AuthPantalla
+import com.hotelwii.feature.cuenta.CuentaPantalla
 import com.hotelwii.feature.hola.HolaScreen
+
 
 /**
  * 🧭 Navegar.kt — Enrutador Composable Sincrónico Ultra-Rápido (< 0.1ms).
@@ -25,14 +29,27 @@ fun Navegar(
             )
         }
         "auth" -> {
-            com.hotelwii.feature.auth.AuthPantalla(
+            AuthPantalla(
                 onAuthExitosa = {
                     rutasState.navegarA("hola")
                 }
             )
         }
+        "cuenta" -> {
+            CuentaPantalla(
+                tabActivaIndex = tabActivaIndex,
+                onSeleccionarTab = { index ->
+                    rutasState.seleccionarTab(index)
+                },
+                onCerrarSesion = {
+                    rutasState.navegarA("auth")
+                },
+                onTemaCambiado = { nombreTema ->
+                    onTemaCambiado(obtenerTemaColors(nombreTema))
+                }
+            )
+        }
         else -> {
-
             Modulo(
                 rutasState = rutasState,
                 tabActivaIndex = tabActivaIndex
@@ -40,3 +57,4 @@ fun Navegar(
         }
     }
 }
+

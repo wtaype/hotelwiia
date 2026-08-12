@@ -244,3 +244,8 @@ val HotelWiTemas = listOf(
 )
 
 fun temaPorDefecto(): WiTemaColors = HotelWiTemas[0]
+
+fun obtenerTemaColors(nombre: String): WiTemaColors {
+    return HotelWiTemas.find { it.name.equals(nombre, ignoreCase = true) } ?: temaPorDefecto()
+}
+

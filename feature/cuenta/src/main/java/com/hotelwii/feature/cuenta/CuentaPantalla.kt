@@ -1,0 +1,74 @@
+package com.hotelwii.feature.cuenta
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.hotelwii.core.kicss.WiCss
+import com.hotelwii.core.kidev.FadeMain
+import com.hotelwii.core.kidev.WiDialog
+import com.hotelwii.feature.cuenta.tabs.Ajustes
+import com.hotelwii.feature.cuenta.tabs.General
+import com.hotelwii.feature.cuenta.tabs.Perfil
+import com.hotelwii.feature.cuenta.tabs.Seguridad
+
+/**
+ * 🏨 CuentaPantalla.kt — Pantalla Maestra del Módulo Cuenta integrada con la barra de sub-pestañas global de HotelWii.
+ */
+@Composable
+fun CuentaPantalla(
+    tabActivaIndex: Int = 0,
+    onSeleccionarTab: (Int) -> Unit = {},
+    onCerrarSesion: () -> Unit = {},
+    onTemaCambiado: (String) -> Unit = {},
+    viewModel: CuentaViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        FadeMain(targetState = tabActivaIndex) { page ->
+            when (page) {
+                0 -> General(
+                    uiState = uiState,
+                    onSeleccionarTema = { nombreTema ->
+                        viewModel.seleccionarTema(nombreTema, onTemaCambiado)
+                    },
+                    onCerrarSesion = {
+                        viewModel.cerrarSesion(onCerrarSesion)
+                    }
+                )
+                1 -> Perfil(
+                    uiState = uiState,
+                    viewModel = viewModel
+                )
+                2 -> Seguridad(
+                    uiState = uiState
+                )
+                3 -> Ajustes()
+                else -> General(
+                    uiState = uiState,
+                    onSeleccionarTema = { nombreTema ->
+                        viewModel.seleccionarTema(nombreTema, onTemaCambiado)
+                    },
+                    onCerrarSesion = {
+                        viewModel.cerrarSesion(onCerrarSesion)
+                    }
+                )
+            }
+        }
+
+        // Modal Informativo para Funcionalidades a Futuro
+        WiDialog(
+            show = uiState.mostrarModalFuturo,
+            title = uiState.tituloModalFuturo.ifBlank { "Próximamente" },
+            text = uiState.mensajeModalFuturo,
+            confirmText = "Entendido",
+            dismissText = "",
+            onConfirm = { viewModel.cerrarModalFuturo() },
+            onDismiss = { viewModel.cerrarModalFuturo() }
+        )
+    }
+}
