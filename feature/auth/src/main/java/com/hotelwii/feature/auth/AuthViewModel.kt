@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class AuthUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
+    val exitoMensaje: String? = null,
     val isSuccess: Boolean = false
 )
 
@@ -185,5 +186,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun limpiarError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun limpiarMensajes() {
+        _uiState.value = _uiState.value.copy(error = null, exitoMensaje = null)
     }
 }

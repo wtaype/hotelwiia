@@ -19,8 +19,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,9 +47,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.hotelwii.feature.auth.data.CacheSmile
+
 /**
- * 🧩 Header.kt — Encabezado 100% Ancho sin border-radius (0 Margin Top, Título Limpio & Avatar Interactivo).
- * Padding ajustado para maximizar la superficie táctil de la barra de pestañas.
+ * 🧩 Header.kt — Encabezado 100% Ancho (0ms Latencia con Caché RAM WiStore & Avatar Reactivo Sin Parpadeo).
  */
 @Composable
 fun Header(
@@ -57,7 +63,14 @@ fun Header(
 ) {
     val context = LocalContext.current
     val store = remember { wiStore(context) }
-    val avatarUrl = remember { store.getSmileAvatar() }
+    val cacheSmile = remember { CacheSmile.getInstance(context) }
+    val sesionActiva by cacheSmile.sesionActivaFlow.collectAsState()
+
+    val avatarUrl = sesionActiva?.avatar ?: store.getSmileAvatar()
+    val nom = sesionActiva?.nombre
+    val usr = sesionActiva?.usuario
+    val nombreUsuario = if (!nom.isNullOrBlank()) nom else if (!usr.isNullOrBlank()) usr else store.getSmileNombre()
+    val iniciales = store.getInicialesNombre()
 
     Box(
         modifier = modifier
@@ -119,10 +132,12 @@ fun Header(
 
             Spacer(Modifier.width(8.dp))
 
-            // Derecha: Avatar Interactivo Dinámico (Cargador nativo de Google/Smile sin Coil)
+            // Derecha: Avatar Interactivo Dinámico (Latencia 0ms RAM Cache + Iniciales Elegantes)
             WiAvatarHeader(
+                store = store,
                 avatarUrl = avatarUrl,
-                nombre = remember { store.getSmileNombre() },
+                nombre = nombreUsuario,
+                iniciales = iniciales,
                 onClick = onClickAvatar
             )
         }
@@ -131,49 +146,51 @@ fun Header(
 
 @Composable
 fun WiAvatarHeader(
+    store: com.hotelwii.core.kidev.WiStore,
     avatarUrl: String?,
     nombre: String,
+    iniciales: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bitmapState = produceState<ImageBitmap?>(initialValue = null, key1 = avatarUrl ?: "") {
-        if (!avatarUrl.isNullOrBlank()) {
-            withContext(Dispatchers.IO) {
-                try {
-                    val stream = URL(avatarUrl).openStream()
-                    val bmp = BitmapFactory.decodeStream(stream)
-                    value = bmp?.asImageBitmap()
-                } catch (e: Exception) {
-                    value = null
-                }
+    // ⚡ 1. Consulta SÍNCRONA en RAM (< 0.01ms - Cero Suspensión / Cero Espera en renderizado)
+    val ramBitmap = remember(avatarUrl) { store.getAvatarBitmapRam(avatarUrl ?: "") }
+    var loadedBitmap by remember(avatarUrl) { mutableStateOf(ramBitmap) }
+
+    // ⚡ 2. Si no está en RAM, descargar en 2do plano SILENCIOSO en background (Dispatchers.IO)
+    LaunchedEffect(avatarUrl) {
+        if (loadedBitmap == null && !avatarUrl.isNullOrBlank()) {
+            val bmp = store.getAvatarBitmap(avatarUrl)
+            if (bmp != null) {
+                loadedBitmap = bmp
             }
-        } else {
-            value = null
         }
     }
 
     Box(
         modifier = modifier
-            .size(35.dp)
+            .size(36.dp)
             .clip(CircleShape)
-            .background(WiCss.mco.copy(alpha = 0.15f))
+            .background(WiCss.mco)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        val loadedBitmap = bitmapState.value
-        if (loadedBitmap != null) {
+        val bmp = loadedBitmap
+        if (bmp != null) {
             Image(
-                bitmap = loadedBitmap,
+                bitmap = bmp,
                 contentDescription = "Avatar de $nombre",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            Icon(
-                painter = painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
-                contentDescription = "Cuenta / Perfil",
-                tint = Color.Unspecified,
-                modifier = Modifier.fillMaxSize()
+            // 🌟 Badge de Iniciales Local-First 0ms (Sin Bloqueos ni Consultas de Red en Primer Plano)
+            Text(
+                text = iniciales.ifBlank { "W" },
+                style = WiText.small.copy(
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                )
             )
         }
     }

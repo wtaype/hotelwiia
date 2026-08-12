@@ -63,9 +63,14 @@ import com.hotelwii.feature.auth.tabs.Login
 import com.hotelwii.feature.auth.tabs.Registro
 import kotlinx.coroutines.launch
 
+import androidx.compose.runtime.LaunchedEffect
+import com.hotelwii.core.kidev.WiMessengerHost
+import com.hotelwii.core.kidev.WiMsgType
+import com.hotelwii.core.kidev.rememberWiMessenger
+
 /**
  * 🔐 AuthPantalla.kt — Pantalla Maestra de Autenticación para HotelWii.
- * Integrada con Google Credential Manager Nativo + Modal de Perfil.
+ * Integrada con Google Credential Manager Nativo + Modal de Perfil + WiMessengerHost (Notificaciones Flotantes 0ms).
  */
 @Composable
 fun AuthPantalla(
@@ -75,8 +80,20 @@ fun AuthPantalla(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
+    val messenger = rememberWiMessenger()
     var tabSeleccionada by remember { mutableStateOf("login") } // "login" | "registro" | "google_modal"
     var googleEmailTemp by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState.exitoMensaje, uiState.error) {
+        uiState.exitoMensaje?.let { msg ->
+            messenger.Notificacion(msg, type = WiMsgType.Success)
+            viewModel.limpiarMensajes()
+        }
+        uiState.error?.let { err ->
+            messenger.Notificacion("❌ $err", type = WiMsgType.Error)
+            viewModel.limpiarMensajes()
+        }
+    }
 
     fun ejecutarGoogleAuthNativo() {
         val credentialManager = CredentialManager.create(context)
@@ -316,5 +333,8 @@ fun AuthPantalla(
 
             Spacer(modifier = Modifier.height(36.dp))
         }
+
+        // 🌟 Notificaciones flotantes estilo Apple (kidev WiMessengerHost)
+        WiMessengerHost(messenger = messenger)
     }
 }

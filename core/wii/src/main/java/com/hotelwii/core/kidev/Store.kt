@@ -2,11 +2,18 @@ package com.hotelwii.core.kidev
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.BitmapFactory
+import android.util.LruCache
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.net.URL
 
 /**
- * 💾 Storage.kt — Motor de almacenamiento persistente local para HotelWii (WiStore)
- * Soporta expiración infinita (horas = null) estilo widev/storage.js
+ * 💾 Store.kt — Motor de Almacenamiento Unificado y Caché de Latencia Cero (WiStore).
+ * Integra persistencia SharedPreferences (datos/sesión) + Caché en RAM LruCache (imágenes/avatares en 0ms).
  */
 class WiStore(context: Context) {
     private val prefs: SharedPreferences =
@@ -141,6 +148,17 @@ class WiStore(context: Context) {
         return get("avatar")
     }
 
+    fun getInicialesNombre(): String {
+        val nom = getSmileNombre().trim()
+        if (nom.isBlank()) return "W"
+        val partes = nom.split(" ").filter { it.isNotBlank() }
+        return when {
+            partes.size >= 2 -> "${partes[0].take(1)}${partes[1].take(1)}".uppercase()
+            partes.size == 1 -> partes[0].take(2).uppercase()
+            else -> "W"
+        }
+    }
+
     fun saveSesion(token: String, usuario: String, email: String, empresa: String): Boolean {
         save("wiToken", token)
         save("usuario", usuario)
@@ -156,6 +174,44 @@ class WiStore(context: Context) {
 
     fun cerrarSesion() {
         remove("wiToken", "wiSmile", "usuario", "email", "empresa", "nombre", "apellidos", "avatar")
+    }
+
+    // ⚡ ─────────────────────────────────────────────────────────────
+    // 🚀 CACHÉ EN MEMORIA RAM DE IMÁGENES / AVATARES (Latencia 0ms)
+    // ⚡ ─────────────────────────────────────────────────────────────
+    fun getAvatarBitmapRam(url: String): ImageBitmap? {
+        if (url.isBlank()) return null
+        return ramImageCache.get(url)
+    }
+
+    suspend fun getAvatarBitmap(url: String): ImageBitmap? {
+        if (url.isBlank()) return null
+        // 1. Buscar en Caché de Memoria RAM (< 0.1ms)
+        ramImageCache.get(url)?.let { return it }
+
+        // 2. Si no está en RAM, descargar en background IO silencioso y guardar en RAM
+        return withContext(Dispatchers.IO) {
+            try {
+                val stream = URL(url).openStream()
+                val bmp = BitmapFactory.decodeStream(stream)
+                val imageBitmap = bmp?.asImageBitmap()
+                if (imageBitmap != null) {
+                    ramImageCache.put(url, imageBitmap)
+                }
+                imageBitmap
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    companion object {
+        // Caché LRU en memoria RAM que almacena hasta 50 imágenes/avatares para renderizado inmediato
+        private val ramImageCache = LruCache<String, ImageBitmap>(50)
+
+        fun limpiarCacheImagenes() {
+            ramImageCache.evictAll()
+        }
     }
 }
 

@@ -150,4 +150,8 @@ class CuentaViewModel(application: Application) : AndroidViewModel(application) 
         cacheSmile.cerrarSesion()
         onCerrarSesion()
     }
+
+    fun limpiarMensajes() {
+        _uiState.update { it.copy(mensajeExito = null, error = null) }
+    }
 }

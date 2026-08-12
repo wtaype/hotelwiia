@@ -15,8 +15,13 @@ import com.hotelwii.feature.cuenta.tabs.General
 import com.hotelwii.feature.cuenta.tabs.Perfil
 import com.hotelwii.feature.cuenta.tabs.Seguridad
 
+import androidx.compose.runtime.LaunchedEffect
+import com.hotelwii.core.kidev.WiMessengerHost
+import com.hotelwii.core.kidev.WiMsgType
+import com.hotelwii.core.kidev.rememberWiMessenger
+
 /**
- * 🏨 CuentaPantalla.kt — Pantalla Maestra del Módulo Cuenta integrada con la barra de sub-pestañas global de HotelWii.
+ * 🏨 CuentaPantalla.kt — Pantalla Maestra del Módulo Cuenta integrada con WiMessengerHost (0ms Latency).
  */
 @Composable
 fun CuentaPantalla(
@@ -27,6 +32,18 @@ fun CuentaPantalla(
     viewModel: CuentaViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val messenger = rememberWiMessenger()
+
+    LaunchedEffect(uiState.mensajeExito, uiState.error) {
+        uiState.mensajeExito?.let { msg ->
+            messenger.Notificacion("✨ $msg", type = WiMsgType.Success)
+            viewModel.limpiarMensajes()
+        }
+        uiState.error?.let { err ->
+            messenger.Notificacion("❌ $err", type = WiMsgType.Error)
+            viewModel.limpiarMensajes()
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         FadeMain(targetState = tabActivaIndex) { page ->
@@ -70,5 +87,8 @@ fun CuentaPantalla(
             onConfirm = { viewModel.cerrarModalFuturo() },
             onDismiss = { viewModel.cerrarModalFuturo() }
         )
+
+        // 🌟 Sistema de Notificaciones Flotantes estilo Apple (kidev WiMessengerHost)
+        WiMessengerHost(messenger = messenger)
     }
 }
