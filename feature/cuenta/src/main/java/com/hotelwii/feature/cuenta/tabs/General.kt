@@ -251,6 +251,7 @@ fun General(
         }
 
         // 3. Card Tamaño de Fuente Smart (FzSmart)
+        val context = androidx.compose.ui.platform.LocalContext.current
         var fontScale by remember { mutableStateOf(FzSmart.scaleFactor) }
         val pctText = "${(fontScale * 100).toInt()}%"
         val labelPreset = when {
@@ -268,12 +269,16 @@ fun General(
                 .padding(16.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Fila 1: Título de la tarjeta + Botón de Reset a la derecha
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.weight(1f, fill = false),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Edit,
                             contentDescription = null,
@@ -289,45 +294,46 @@ fun General(
                         )
                     }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    // Botón de Reset de Tamaño de Fuente (Restablecer)
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .background(WiCss.mco.copy(alpha = 0.12f))
+                            .clickable {
+                                fontScale = 1.0f
+                                FzSmart.setScale(context, 1.0f)
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        // Botón de Reset de Tamaño de Fuente
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(WiCss.mco.copy(alpha = 0.15f))
-                                .clickable {
-                                    fontScale = 1.0f
-                                    FzSmart.scaleFactor = 1.0f
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "Restablecer Fuente",
-                                tint = WiCss.mco,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-
-                        GoldPill(text = "$pctText ($labelPreset)")
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "Restablecer Fuente",
+                            tint = WiCss.mco,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
 
-                Text(
-                    text = "Ajusta la escala tipográfica de toda la aplicación en tiempo real.",
-                    style = WiText.small,
-                    color = WiCss.tx3
-                )
+                // Fila 2: Indicador Píldora de Estado + Descripción Responsiva
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    GoldPill(text = "$pctText • $labelPreset")
+                    Text(
+                        text = "Escala tipográfica en tiempo real",
+                        style = WiText.small,
+                        color = WiCss.tx3
+                    )
+                }
 
+                // Fila 3: Slider de Ajuste Fino
                 Slider(
                     value = fontScale,
                     onValueChange = { nuevaEscala ->
                         fontScale = nuevaEscala
-                        FzSmart.scaleFactor = nuevaEscala
+                        FzSmart.setScale(context, nuevaEscala)
                     },
                     valueRange = 0.85f..1.30f,
                     colors = SliderDefaults.colors(
@@ -338,7 +344,7 @@ fun General(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Presets Rápidos
+                // Fila 4: Presets Rápidos
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -365,7 +371,7 @@ fun General(
                                 )
                                 .clickable {
                                     fontScale = valEscala
-                                    FzSmart.scaleFactor = valEscala
+                                    FzSmart.setScale(context, valEscala)
                                 }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {

@@ -59,6 +59,7 @@ fun Header(
     meta: MetaRuta,
     onToggleSidebar: () -> Unit = {},
     onClickAvatar: () -> Unit = {},
+    onClickTitle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -84,7 +85,7 @@ fun Header(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Izquierda: Hamburguesa + Ícono del Feature + Título y Subtítulo
+            // Izquierda: Hamburguesa + Block Central Clickeable Silencioso (Ícono + Título + Subtítulo)
             Row(
                 modifier = Modifier.weight(1f, fill = false),
                 verticalAlignment = Alignment.CenterVertically
@@ -102,31 +103,42 @@ fun Header(
 
                 Spacer(Modifier.width(8.dp))
 
-                Icon(
-                    imageVector = meta.icono,
-                    contentDescription = null,
-                    tint = WiCss.mco,
-                    modifier = Modifier.size(20.dp)
-                )
-
-                Spacer(Modifier.width(8.dp))
-
-                Column(modifier = Modifier.weight(1f, fill = false)) {
-                    Text(
-                        text = meta.titulo,
-                        style = WiText.body,
-                        color = WiCss.tx,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                // Bloque Central de Título Interactivo (Silencioso y Ultra-Rápido)
+                Row(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .clickable(
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                            indication = null
+                        ) { onClickTitle() },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = meta.icono,
+                        contentDescription = null,
+                        tint = WiCss.mco,
+                        modifier = Modifier.size(20.dp)
                     )
-                    Text(
-                        text = meta.subtitulo,
-                        style = WiText.tiny,
-                        color = WiCss.tx3,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+
+                    Spacer(Modifier.width(8.dp))
+
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                        Text(
+                            text = meta.titulo,
+                            style = WiText.body,
+                            color = WiCss.tx,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = meta.subtitulo,
+                            style = WiText.tiny,
+                            color = WiCss.tx3,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
 

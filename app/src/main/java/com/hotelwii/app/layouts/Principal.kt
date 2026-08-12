@@ -120,6 +120,11 @@ fun Principal(
                                     },
                                     onClickAvatar = {
                                         rutasState.navegarA("cuenta")
+                                    },
+                                    onClickTitle = {
+                                        if (rutasState.rutaActual != com.hotelwii.app.Seo.PANTALLA_INICIAL) {
+                                            rutasState.navegarA(com.hotelwii.app.Seo.PANTALLA_INICIAL)
+                                        }
                                     }
                                 )
                             }

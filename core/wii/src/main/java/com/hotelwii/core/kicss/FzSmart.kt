@@ -29,6 +29,18 @@ fun clampDp(min: Float, preferredVh: Float, max: Float): Dp = dpSmart(min, prefe
 object FzSmart {
     var scaleFactor: Float = 1.0f
 
+    fun init(context: android.content.Context) {
+        val store = com.hotelwii.core.kidev.wiStore(context)
+        val saved = store.get("fz_scale", "1.0").toFloatOrNull() ?: 1.0f
+        scaleFactor = saved
+    }
+
+    fun setScale(context: android.content.Context, newScale: Float) {
+        scaleFactor = newScale
+        val store = com.hotelwii.core.kidev.wiStore(context)
+        store.save("fz_scale", newScale.toString())
+    }
+
     // Escalas de fuente CSS (TextUnit sp) multiplicadas dinámicamente por scaleFactor
     val fz_s1: TextUnit get() = (11f * scaleFactor).sp
     val fz_s2: TextUnit get() = (11.5f * scaleFactor).sp

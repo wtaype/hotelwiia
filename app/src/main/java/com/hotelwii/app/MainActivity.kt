@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.hotelwii.core.kicss.FzSmart.init(this)
 
         setContent {
             val currentTema by mainViewModel.currentTema.collectAsState()
