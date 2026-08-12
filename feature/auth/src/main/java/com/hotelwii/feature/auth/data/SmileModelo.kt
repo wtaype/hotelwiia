@@ -1,3 +1,5 @@
+package com.hotelwii.feature.auth.data
+
 import com.hotelwii.core.Wii
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
