@@ -171,7 +171,6 @@ fun WiAvatarHeader(
         modifier = modifier
             .size(36.dp)
             .clip(CircleShape)
-            .background(WiCss.mco)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -184,13 +183,12 @@ fun WiAvatarHeader(
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // 🌟 Badge de Iniciales Local-First 0ms (Sin Bloqueos ni Consultas de Red en Primer Plano)
-            Text(
-                text = iniciales.ifBlank { "W" },
-                style = WiText.small.copy(
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold
-                )
+            // 🌟 Si el usuario no tiene avatar personalizado, mostrar el logo smile circular por defecto (logo_circle) en 0ms
+            Image(
+                painter = painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
+                contentDescription = "Avatar Smile de $nombre",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
