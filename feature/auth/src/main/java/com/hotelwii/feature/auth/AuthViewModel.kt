@@ -3,7 +3,6 @@ package com.hotelwii.feature.auth
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.hotelwii.core.data.session.SessionManager
 import com.hotelwii.feature.auth.api.AuthApi
 import com.hotelwii.feature.auth.data.CacheSmile
 import com.hotelwii.feature.auth.lib.Serializar
@@ -44,10 +43,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             res.fold(
                 onSuccess = { smile ->
                     cacheSmile.guardarSesion(smile)
-                    SessionManager.actualizarSession(
-                        hotelNombre = "Hotel Wii",
-                        usuarioNombre = smile.nombre.ifBlank { smile.usuario }
-                    )
                     _uiState.value = AuthUiState(isSuccess = true)
                     onExito()
                 },
@@ -99,10 +94,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             res.fold(
                 onSuccess = { smile ->
                     cacheSmile.guardarSesion(smile)
-                    SessionManager.actualizarSession(
-                        hotelNombre = "Hotel Wii",
-                        usuarioNombre = smile.nombre.ifBlank { smile.usuario }
-                    )
                     _uiState.value = AuthUiState(isSuccess = true)
                     onExito()
                 },
@@ -127,10 +118,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val smile = resultado.smile
                     if (!resultado.esNuevoUsuario && smile != null) {
                         cacheSmile.guardarSesion(smile)
-                        SessionManager.actualizarSession(
-                            hotelNombre = "Hotel Wii",
-                            usuarioNombre = smile.nombre.ifBlank { smile.usuario }
-                        )
                         _uiState.value = AuthUiState(isSuccess = true)
                         onAuthExitosa()
                     } else {
@@ -170,10 +157,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             res.fold(
                 onSuccess = { smile ->
                     cacheSmile.guardarSesion(smile)
-                    SessionManager.actualizarSession(
-                        hotelNombre = "Hotel Wii",
-                        usuarioNombre = smile.nombre.ifBlank { smile.usuario }
-                    )
                     _uiState.value = AuthUiState(isSuccess = true)
                     onAuthExitosa()
                 },

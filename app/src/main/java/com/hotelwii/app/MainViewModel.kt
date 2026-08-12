@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+import com.hotelwii.feature.auth.data.CacheSmile
+
 /**
  * 🚀 MainViewModel — ViewModel principal ultra-liviano para HotelWii.
  * Gestiona la reactividad del tema activo y coordina su persistencia con WiTemas.
@@ -16,12 +18,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentTema = MutableStateFlow<WiTemaColors>(WiTemas.getTemaInicial(application))
     val currentTema: StateFlow<WiTemaColors> = _currentTema.asStateFlow()
 
-    private val store = com.hotelwii.core.kidev.wiStore(application)
+    private val cacheSmile = CacheSmile.getInstance(application)
 
     /**
      * Resuelve la ruta inicial sincrónicamente en RAM (< 0.1ms) para evitar parpadeos
      */
-    val rutaInicial: String = if (store.hasSesion()) "hola" else "auth"
+    val rutaInicial: String = if (cacheSmile.hasSesion()) "hola" else "auth"
 
 
     /**

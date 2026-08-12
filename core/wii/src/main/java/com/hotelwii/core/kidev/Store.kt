@@ -12,8 +12,8 @@ import org.json.JSONObject
 import java.net.URL
 
 /**
- * 💾 Store.kt — Motor de Almacenamiento Unificado y Caché de Latencia Cero (WiStore).
- * Integra persistencia SharedPreferences (datos/sesión) + Caché en RAM LruCache (imágenes/avatares en 0ms).
+ * 💾 Store.kt — Gestor genérico de almacenamiento local (SharedPreferences) y caché RAM (LruCache).
+ * 100% agnóstico y libre de lógica de dominio (estilo storage.js).
  */
 class WiStore(context: Context) {
     private val prefs: SharedPreferences =
@@ -44,7 +44,7 @@ class WiStore(context: Context) {
     }
 
     /**
-     * Guarda un valor JSON con tiempo de expiración (horas).
+     * savels: Guarda un valor JSON con tiempo de expiración (horas).
      * Si horas == null o horas <= 0, exp = 0L (expiración infinita permanente estilo storage.js).
      */
     fun savels(key: String, jsonValue: String, horas: Long? = null): Boolean {
@@ -57,8 +57,8 @@ class WiStore(context: Context) {
     }
 
     /**
-     * Obtiene un valor guardado con TTL.
-     * Si exp == 0L o exp es nulo, NUNCA expira (retorna el valor persistentemente).
+     * getls: Obtiene un valor guardado con TTL.
+     * Si exp == 0L o exp es nulo, NUNCA expira (retorna el valor persistentemente estilo storage.js).
      */
     fun getls(key: String): String? {
         val raw = get(key, "")
@@ -77,6 +77,9 @@ class WiStore(context: Context) {
         }
     }
 
+    /**
+     * removels / remove: Elimina una o más claves del almacenamiento local.
+     */
     fun remove(vararg keys: String) {
         val editor = prefs.edit()
         keys.forEach { editor.remove(it) }
@@ -85,95 +88,6 @@ class WiStore(context: Context) {
 
     fun clearAll() {
         prefs.edit().clear().apply()
-    }
-
-    // ─── Helpers de Autenticación y Sesión wiSmile ─────────────────
-    fun hasSesion(): Boolean {
-        return get("wiToken").isNotEmpty() || getls("wiSmile") != null
-    }
-
-    /**
-     * Guarda el objeto Smile completo en JSON en la clave wiSmile con expiración infinita (horas = null).
-     */
-    fun saveSmile(
-        id: String,
-        usuario: String,
-        email: String,
-        nombre: String = "",
-        apellidos: String = "",
-        avatar: String = ""
-    ): Boolean {
-        save("wiToken", id)
-        save("usuario", usuario)
-        save("email", email)
-        save("nombre", nombre)
-        save("apellidos", apellidos)
-        save("avatar", avatar)
-
-        val smileJson = JSONObject().apply {
-            put("id", id)
-            put("usuario", usuario)
-            put("email", email)
-            put("nombre", nombre)
-            put("apellidos", apellidos)
-            put("avatar", avatar)
-        }.toString()
-
-        return savels("wiSmile", smileJson, horas = null)
-    }
-
-    /**
-     * Recupera el JSON guardado en wiSmile.
-     */
-    fun getSmileJson(): JSONObject? {
-        val raw = getls("wiSmile") ?: return null
-        return try {
-            JSONObject(raw)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun getSmileNombre(): String {
-        val json = getSmileJson()
-        val nom = json?.optString("nombre", "") ?: ""
-        if (nom.isNotBlank()) return nom
-        return get("usuario").ifBlank { "Usuario" }
-    }
-
-    fun getSmileAvatar(): String {
-        val json = getSmileJson()
-        val av = json?.optString("avatar", "") ?: ""
-        if (av.isNotBlank()) return av
-        return get("avatar")
-    }
-
-    fun getInicialesNombre(): String {
-        val nom = getSmileNombre().trim()
-        if (nom.isBlank()) return "W"
-        val partes = nom.split(" ").filter { it.isNotBlank() }
-        return when {
-            partes.size >= 2 -> "${partes[0].take(1)}${partes[1].take(1)}".uppercase()
-            partes.size == 1 -> partes[0].take(2).uppercase()
-            else -> "W"
-        }
-    }
-
-    fun saveSesion(token: String, usuario: String, email: String, empresa: String): Boolean {
-        save("wiToken", token)
-        save("usuario", usuario)
-        save("email", email)
-        save("empresa", empresa)
-        return saveSmile(id = token, usuario = usuario, email = email)
-    }
-
-    fun getEmpresaNombre(): String {
-        val emp = get("empresa")
-        return if (emp.isNotEmpty()) emp else "Empresa"
-    }
-
-    fun cerrarSesion() {
-        remove("wiToken", "wiSmile", "usuario", "email", "empresa", "nombre", "apellidos", "avatar")
     }
 
     // ⚡ ─────────────────────────────────────────────────────────────
@@ -186,10 +100,8 @@ class WiStore(context: Context) {
 
     suspend fun getAvatarBitmap(url: String): ImageBitmap? {
         if (url.isBlank()) return null
-        // 1. Buscar en Caché de Memoria RAM (< 0.1ms)
         ramImageCache.get(url)?.let { return it }
 
-        // 2. Si no está en RAM, descargar en background IO silencioso y guardar en RAM
         return withContext(Dispatchers.IO) {
             try {
                 val stream = URL(url).openStream()
@@ -206,7 +118,6 @@ class WiStore(context: Context) {
     }
 
     companion object {
-        // Caché LRU en memoria RAM que almacena hasta 50 imágenes/avatares para renderizado inmediato
         private val ramImageCache = LruCache<String, ImageBitmap>(50)
 
         fun limpiarCacheImagenes() {

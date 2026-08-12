@@ -66,11 +66,11 @@ fun Header(
     val cacheSmile = remember { CacheSmile.getInstance(context) }
     val sesionActiva by cacheSmile.sesionActivaFlow.collectAsState()
 
-    val avatarUrl = sesionActiva?.avatar ?: store.getSmileAvatar()
+    val avatarUrl = sesionActiva?.avatar
     val nom = sesionActiva?.nombre
     val usr = sesionActiva?.usuario
-    val nombreUsuario = if (!nom.isNullOrBlank()) nom else if (!usr.isNullOrBlank()) usr else store.getSmileNombre()
-    val iniciales = store.getInicialesNombre()
+    val nombreUsuario = if (!nom.isNullOrBlank()) nom else if (!usr.isNullOrBlank()) usr else "Usuario"
+    val iniciales = cacheSmile.getInicialesNombre()
 
     Box(
         modifier = modifier
