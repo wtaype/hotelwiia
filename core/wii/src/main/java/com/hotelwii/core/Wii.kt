@@ -4,12 +4,10 @@ package com.hotelwii.core
 object Wii {
     const val id = "HotelWii"
     const val app = "HotelWii"
-    const val hotelNombreDefault = "Hotel Huacachina Oasis"
-    const val hotelUbicacion = "Huacachina, Ica, Perú 🌴"
     const val icon = "hotel"
     const val titulo = "HotelWii | Super App de Gestión Hotelera"
-    const val keywii = "HotelWii, pos, hotel, recepcion, reniec, sunat, reservas, huacachina"
-    const val descri = "Super App de gestión hotelera y recepción ultra-veloz para hoteles en Huacachina, Ica con Decolecta API e impresión ESC/POS."
+    const val keywii = "HotelWii, pos, hotel, recepcion, reniec, sunat, reservas"
+    const val descri = "Super App de gestión hotelera y recepción ultra-veloz para hoteles con Decolecta API e impresión ESC/POS."
     const val lanzamiento = 2026
     const val by = "@wilder.taype"
     const val linkweb = "https://hotelwii.web.app"

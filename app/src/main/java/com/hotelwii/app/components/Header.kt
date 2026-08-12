@@ -1,5 +1,7 @@
 package com.hotelwii.app.components
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,13 +18,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,6 +37,9 @@ import com.hotelwii.core.kicss.WiCss
 import com.hotelwii.core.kicss.WiIcons
 import com.hotelwii.core.kicss.WiText
 import com.hotelwii.core.kidev.wiStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URL
 
 /**
  * 🧩 Header.kt — Encabezado 100% Ancho sin border-radius (0 Margin Top, Título Limpio & Avatar Interactivo).
@@ -107,22 +116,66 @@ fun Header(
 
             Spacer(Modifier.width(8.dp))
 
-            // Derecha: Avatar Interactivo (Fallback nativo logo_circle)
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(WiCss.mco.copy(alpha = 0.15f))
-                    .clickable { onClickAvatar() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
-                    contentDescription = "Cuenta / Perfil",
-                    tint = androidx.compose.ui.graphics.Color.Unspecified,
-                    modifier = Modifier.size(24.dp)
-                )
+            // Derecha: Avatar Interactivo Dinámico (Cargador nativo de Google/Smile sin Coil)
+            WiAvatarHeader(
+                avatarUrl = avatarUrl,
+                nombre = remember { store.getSmileNombre() },
+                onClick = onClickAvatar
+            )
+        }
+    }
+}
+
+@Composable
+fun WiAvatarHeader(
+    avatarUrl: String?,
+    nombre: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val bitmapState = produceState<ImageBitmap?>(initialValue = null, key1 = avatarUrl) {
+        if (!avatarUrl.isNullOrBlank()) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val stream = URL(avatarUrl).openStream()
+                    val bmp = BitmapFactory.decodeStream(stream)
+                    value = bmp?.asImageBitmap()
+                } catch (e: Exception) {
+                    value = null
+                }
             }
+        } else {
+            value = null
+        }
+    }
+
+    val inicial = remember(nombre) {
+        nombre.trim().firstOrNull()?.uppercase() ?: "U"
+    }
+
+    Box(
+        modifier = modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(WiCss.mco.copy(alpha = 0.15f))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        val loadedBitmap = bitmapState.value
+        if (loadedBitmap != null) {
+            Image(
+                bitmap = loadedBitmap,
+                contentDescription = "Avatar de $nombre",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(36.dp)
+            )
+        } else {
+            androidx.compose.material3.Icon(
+                painter = androidx.compose.ui.res.painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
+                contentDescription = "Cuenta / Perfil",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }

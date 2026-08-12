@@ -29,7 +29,7 @@ import com.hotelwii.core.kicss.WiText
 fun Drawer(
     rutaActiva: String,
     onSeleccionarRuta: (String) -> Unit,
-    hotelNombre: String = Wii.hotelNombreDefault,
+    hotelNombre: String = "Mi Hotel",
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -122,7 +122,7 @@ fun Drawer(
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "${Wii.app} · ${Wii.hotelUbicacion}",
+                            text = "${Wii.app} · ${Wii.version}",
                             style = WiText.tiny,
                             color = WiCss.success,
                             fontWeight = FontWeight.Bold

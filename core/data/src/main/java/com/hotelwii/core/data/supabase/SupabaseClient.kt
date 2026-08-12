@@ -7,10 +7,12 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 
 object HotelWiiSupabase {
-    // Configuración global del cliente Supabase
     private var clientInstance: SupabaseClient? = null
 
-    fun initialize(url: String, anonKey: String): SupabaseClient {
+    private const val DEFAULT_URL = "https://jinkvztwldsuyppgdzmd.supabase.co"
+    private const val DEFAULT_ANON_KEY = "sb_publishable_P400uHDaaZ67e_ugVs6xWw_Xc5xfA7Z"
+
+    fun initialize(url: String = DEFAULT_URL, anonKey: String = DEFAULT_ANON_KEY): SupabaseClient {
         if (clientInstance == null) {
             clientInstance = createSupabaseClient(
                 supabaseUrl = url,
@@ -25,5 +27,9 @@ object HotelWiiSupabase {
     }
 
     val client: SupabaseClient
-        get() = clientInstance ?: throw IllegalStateException("Supabase no ha sido inicializado. Ingrese credenciales en local.properties.")
+        get() = clientInstance ?: initialize()
+
+    val instancia: SupabaseClient
+        get() = client
 }
+

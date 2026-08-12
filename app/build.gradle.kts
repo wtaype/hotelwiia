@@ -30,6 +30,8 @@ dependencies {
     implementation(project(":core:wii"))
     implementation(project(":core:data"))
     implementation(project(":feature:hola"))
+    implementation(project(":feature:auth"))
+
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

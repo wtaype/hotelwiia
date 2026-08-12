@@ -24,7 +24,15 @@ fun Navegar(
                 onCambiarTema = onTemaCambiado
             )
         }
+        "auth" -> {
+            com.hotelwii.feature.auth.AuthPantalla(
+                onAuthExitosa = {
+                    rutasState.navegarA("hola")
+                }
+            )
+        }
         else -> {
+
             Modulo(
                 rutasState = rutasState,
                 tabActivaIndex = tabActivaIndex

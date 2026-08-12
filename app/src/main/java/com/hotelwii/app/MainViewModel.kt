@@ -16,10 +16,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentTema = MutableStateFlow<WiTemaColors>(WiTemas.getTemaInicial(application))
     val currentTema: StateFlow<WiTemaColors> = _currentTema.asStateFlow()
 
+    private val store = com.hotelwii.core.kidev.wiStore(application)
+
     /**
-     * Resuelve la ruta inicial sincrónicamente en RAM (< 2ms) para evitar parpadeos
+     * Resuelve la ruta inicial sincrónicamente en RAM (< 0.1ms) para evitar parpadeos
      */
-    val rutaInicial: String = "hola"
+    val rutaInicial: String = if (store.hasSesion()) "hola" else "auth"
+
 
     /**
      * Sincroniza y guarda la nueva preferencia de tema en WiStore
