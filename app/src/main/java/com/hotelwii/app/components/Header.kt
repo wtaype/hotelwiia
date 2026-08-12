@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +30,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -133,7 +136,7 @@ fun WiAvatarHeader(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bitmapState = produceState<ImageBitmap?>(initialValue = null, key1 = avatarUrl) {
+    val bitmapState = produceState<ImageBitmap?>(initialValue = null, key1 = avatarUrl ?: "") {
         if (!avatarUrl.isNullOrBlank()) {
             withContext(Dispatchers.IO) {
                 try {
@@ -149,13 +152,9 @@ fun WiAvatarHeader(
         }
     }
 
-    val inicial = remember(nombre) {
-        nombre.trim().firstOrNull()?.uppercase() ?: "U"
-    }
-
     Box(
         modifier = modifier
-            .size(36.dp)
+            .size(35.dp)
             .clip(CircleShape)
             .background(WiCss.mco.copy(alpha = 0.15f))
             .clickable { onClick() },
@@ -167,15 +166,16 @@ fun WiAvatarHeader(
                 bitmap = loadedBitmap,
                 contentDescription = "Avatar de $nombre",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.fillMaxSize()
             )
         } else {
-            androidx.compose.material3.Icon(
-                painter = androidx.compose.ui.res.painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
+            Icon(
+                painter = painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
                 contentDescription = "Cuenta / Perfil",
                 tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
 }
+

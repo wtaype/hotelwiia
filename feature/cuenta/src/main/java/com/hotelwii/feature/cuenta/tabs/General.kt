@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,9 +23,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,9 +47,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hotelwii.core.kicss.FzSmart
 import com.hotelwii.core.kicss.HotelWiTemas
 import com.hotelwii.core.kicss.WiCss
-import com.hotelwii.core.kicss.WiIcons
 import com.hotelwii.core.kicss.WiText
 import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.core.kidev.WiButton
@@ -55,7 +60,7 @@ import kotlinx.coroutines.withContext
 import java.net.URL
 
 /**
- * 📱 General.kt — Pestaña 1: Resumen de Perfil VIP, Selector de Temas Oficiales & Cierre de Sesión Seguro.
+ * 📱 General.kt — Pestaña 1: Resumen de Perfil VIP, Selector de Temas Oficiales, Tamaño de Fuente Smart & Cierre de Sesión.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -111,7 +116,7 @@ fun General(
                     modifier = Modifier
                         .size(60.dp)
                         .clip(CircleShape)
-                        .background(WiCss.mco.copy(alpha = 0.2f)),
+                        .background(WiCss.mco.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     val loadedBitmap = bitmapState.value
@@ -120,14 +125,14 @@ fun General(
                             bitmap = loadedBitmap,
                             contentDescription = "Avatar",
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(60.dp)
+                            modifier = Modifier.fillMaxSize()
                         )
                     } else {
                         Icon(
                             painter = painterResource(id = com.hotelwii.core.wii.R.drawable.logo_circle),
                             contentDescription = "Avatar",
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(38.dp)
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
@@ -245,7 +250,138 @@ fun General(
             }
         }
 
-        // 3. Bloque de Seguridad / Cerrar Sesión
+        // 3. Card Tamaño de Fuente Smart (FzSmart)
+        var fontScale by remember { mutableStateOf(FzSmart.scaleFactor) }
+        val pctText = "${(fontScale * 100).toInt()}%"
+        val labelPreset = when {
+            fontScale <= 0.88f -> "Pequeño"
+            fontScale <= 1.05f -> "Normal"
+            fontScale <= 1.20f -> "Grande"
+            else -> "Extra"
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(WiCss.wb)
+                .padding(16.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = null,
+                            tint = WiCss.mco,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Tamaño de Fuente Smart",
+                            style = WiText.h4,
+                            color = WiCss.tx1,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        // Botón de Reset de Tamaño de Fuente
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(WiCss.mco.copy(alpha = 0.15f))
+                                .clickable {
+                                    fontScale = 1.0f
+                                    FzSmart.scaleFactor = 1.0f
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = "Restablecer Fuente",
+                                tint = WiCss.mco,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        GoldPill(text = "$pctText ($labelPreset)")
+                    }
+                }
+
+                Text(
+                    text = "Ajusta la escala tipográfica de toda la aplicación en tiempo real.",
+                    style = WiText.small,
+                    color = WiCss.tx3
+                )
+
+                Slider(
+                    value = fontScale,
+                    onValueChange = { nuevaEscala ->
+                        fontScale = nuevaEscala
+                        FzSmart.scaleFactor = nuevaEscala
+                    },
+                    valueRange = 0.85f..1.30f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = WiCss.mco,
+                        activeTrackColor = WiCss.mco,
+                        inactiveTrackColor = WiCss.brd
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Presets Rápidos
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val presets = listOf(
+                        "Pequeño" to 0.85f,
+                        "Normal" to 1.00f,
+                        "Grande" to 1.15f,
+                        "Extra" to 1.30f
+                    )
+                    presets.forEach { (nombre, valEscala) ->
+                        val isPresetSelected = kotlin.math.abs(fontScale - valEscala) < 0.05f
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(
+                                    if (isPresetSelected) WiCss.mco.copy(alpha = 0.15f)
+                                    else WiCss.inp
+                                )
+                                .border(
+                                    width = if (isPresetSelected) 1.5.dp else 1.dp,
+                                    color = if (isPresetSelected) WiCss.mco else WiCss.brd,
+                                    shape = RoundedCornerShape(999.dp)
+                                )
+                                .clickable {
+                                    fontScale = valEscala
+                                    FzSmart.scaleFactor = valEscala
+                                }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = nombre,
+                                style = WiText.small,
+                                color = if (isPresetSelected) WiCss.mco else WiCss.tx2,
+                                fontWeight = if (isPresetSelected) FontWeight.Bold else FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Bloque de Seguridad / Cerrar Sesión
         Box(
             modifier = Modifier
                 .fillMaxWidth()
