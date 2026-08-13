@@ -39,6 +39,7 @@ import com.hotelwii.core.kicss.WiIcons
 import com.hotelwii.core.kicss.WiText
 import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.core.kidev.WiButton
+import com.hotelwii.core.kidev.WiButtonVariant
 import com.hotelwii.core.kidev.WiField
 import com.hotelwii.core.kidev.WiSwitch
 import com.hotelwii.core.kidev.wiStore
@@ -163,6 +164,7 @@ fun Ajustes() {
                         store.save("mi_api_decolecta", tokenDecolecta.trim())
                         mensajeApiGuardado = "¡Token personal guardado correctamente!"
                     },
+                    variant = WiButtonVariant.Primary,
                     icon = Icons.Rounded.Check,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -233,8 +235,7 @@ fun Ajustes() {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://apis.net.pe"))
                             context.startActivity(intent)
                         },
-                        containerColor = WiCss.inp,
-                        contentColor = WiCss.tx1,
+                        variant = WiButtonVariant.Secondary,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -244,8 +245,7 @@ fun Ajustes() {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://decolecta.com"))
                             context.startActivity(intent)
                         },
-                        containerColor = WiCss.mco.copy(alpha = 0.15f),
-                        contentColor = WiCss.mco,
+                        variant = WiButtonVariant.Outline,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -308,6 +308,7 @@ fun Ajustes() {
                     onClick = {
                         mensajeCacheLimpiada = "Caché residual optimizada correctamente."
                     },
+                    variant = WiButtonVariant.Error,
                     icon = WiIcons.Refresh,
                     modifier = Modifier.fillMaxWidth()
                 )

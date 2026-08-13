@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 /**
- * WiTemaColors — Transcripción 1:1 de las 27 variables CSS por cada tema de witema.css
+ * WiTemaColors — Transcripción 1:1 de las variables CSS por cada tema de witema.css
  */
 @Immutable
 data class WiTemaColors(
@@ -16,6 +16,7 @@ data class WiTemaColors(
     val tx2: Color,
     val tx3: Color,
     val tx4: Color = Color(0xFFFFFFFF),
+    val tx5: Color = Color(0xFF0F172A), // Texto de alto contraste para botones/acciones de contenedor claro
     val txa: Color,
     val txe: Color,
     val hv: Color,
@@ -64,7 +65,7 @@ object WiTemaGlobal {
 }
 
 /**
- * HotelWiTemas — Los 5 Temas Oficiales completos convertidos 1:1 de witema.css con las 27 propiedades:
+ * HotelWiTemas — Los 5 Temas Oficiales completos convertidos 1:1 de witema.css:
  * 1. Luz
  * 2. Cielo
  * 3. Dulce
@@ -82,6 +83,7 @@ val HotelWiTemas = listOf(
         tx2       = Color(0xFF0D0D0D),
         tx3       = Color(0xFF64748B),
         tx4       = Color(0xFF000000),
+        tx5       = Color(0xFF0F172A), // Slate oscuro nítido
         txa       = Color(0xFFFFFFFF),
         txe       = Color(0xFF00897B),
         hv        = Color(0xFF14B8A6),
@@ -116,6 +118,7 @@ val HotelWiTemas = listOf(
         tx2       = Color(0xFF333333),
         tx3       = Color(0xFF666666),
         tx4       = Color(0xFF000000),
+        tx5       = Color(0xFF0C4A6E), // Azul marino profundo nítido
         txa       = Color(0xFFFFFFFF),
         txe       = Color(0xFF000000),
         hv        = Color(0xFF00A8E6),
@@ -150,6 +153,7 @@ val HotelWiTemas = listOf(
         tx2       = Color(0xFF330000),
         tx3       = Color(0xFF660000),
         tx4       = Color(0xFF000000),
+        tx5       = Color(0xFF881337), // Rojo borgoña profundo nítido
         txa       = Color(0xFFFFFFFF),
         txe       = Color(0xFF000000),
         hv        = Color(0xFFFF7A85),
@@ -184,6 +188,7 @@ val HotelWiTemas = listOf(
         tx2       = Color(0xFF003300),
         tx3       = Color(0xFF006600),
         tx4       = Color(0xFF000000),
+        tx5       = Color(0xFF14532D), // Verde bosque profundo nítido
         txa       = Color(0xFFFFFFFF),
         txe       = Color(0xFF000000),
         hv        = Color(0xFF3CD741),
@@ -213,11 +218,12 @@ val HotelWiTemas = listOf(
         name      = "Futuro",
         bg        = Color(0xFF0A0E1A),
         wb        = Color(0xFF151B2E),
-        tx        = Color(0xFFFFFFFF), // Blanco puro nítido
-        tx1       = Color(0xFFF1F5F9), // Blanco suave
-        tx2       = Color(0xFFCBD5E1), // Gris claro
-        tx3       = Color(0xFF94A3B8), // Gris acero legible
-        tx4       = Color(0xFFFFFFFF), // Blanco puro destacado (WCAG AAA)
+        tx        = Color(0xFFFFFFFF),
+        tx1       = Color(0xFFF1F5F9),
+        tx2       = Color(0xFFCBD5E1),
+        tx3       = Color(0xFF94A3B8),
+        tx4       = Color(0xFFFFFFFF),
+        tx5       = Color(0xFF00F3FF), // Cyan Neón brillante nítido
         txa       = Color(0xFF0A0E1A),
         txe       = Color(0xFF00F3FF),
         hv        = Color(0xFF00D4FF),
@@ -248,4 +254,3 @@ fun temaPorDefecto(): WiTemaColors = HotelWiTemas[0]
 fun obtenerTemaColors(nombre: String): WiTemaColors {
     return HotelWiTemas.find { it.name.equals(nombre, ignoreCase = true) } ?: temaPorDefecto()
 }
-

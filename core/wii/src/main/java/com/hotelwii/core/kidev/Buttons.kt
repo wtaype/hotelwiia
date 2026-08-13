@@ -1,6 +1,8 @@
 package com.hotelwii.core.kidev
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +31,17 @@ import com.hotelwii.core.kicss.dpSmart
 import com.hotelwii.core.kicss.fPoppins
 
 /**
- * 🔘 Buttons.kt — Botones y Pills Atómicos de HotelWii con contraste de color inteligente.
+ * 🎨 WiButtonVariant — Variantes de diseño estándar reutilizables para HotelWii.
+ */
+enum class WiButtonVariant {
+    Primary,   // Gradiente de marca (mco -> hva) con texto e ícono txa (Blanco)
+    Secondary, // Fondo secundario (inp) con texto e ícono de alto contraste tx5
+    Outline,   // Sin fondo, borde sutil brd con texto e ícono de acento mco
+    Error      // Fondo semáforo error (#FF3849) con texto e ícono blanco para acciones destructivas/limpieza
+}
+
+/**
+ * 🔘 GoldPill — Píldora de estado en tono dorado/acento.
  */
 @Composable
 fun GoldPill(text: String, modifier: Modifier = Modifier) {
@@ -43,19 +55,32 @@ fun GoldPill(text: String, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * 🔘 WiButton — Componente Atómico Reutilizable de Botón con Variantes Semánticas y Contraste `tx5`.
+ */
 @Composable
 fun WiButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    variant: WiButtonVariant = WiButtonVariant.Primary,
     icon: ImageVector? = null,
     loading: Boolean = false,
     containerColor: Color? = null,
     contentColor: Color? = null
 ) {
     val alpha = if (loading) 0.5f else 1.0f
-    val backgroundModifier = if (containerColor != null) {
-        Modifier.background(containerColor.copy(alpha = alpha))
+
+    // 🎨 Resolución de Color de Fondo
+    val effectiveContainerColor = containerColor ?: when (variant) {
+        WiButtonVariant.Primary -> null // Usa gradiente mco -> hva
+        WiButtonVariant.Secondary -> WiCss.inp
+        WiButtonVariant.Outline -> Color.Transparent
+        WiButtonVariant.Error -> WiCss.error
+    }
+
+    val backgroundModifier = if (effectiveContainerColor != null) {
+        Modifier.background(effectiveContainerColor.copy(alpha = alpha))
     } else {
         Modifier.background(
             Brush.linearGradient(
@@ -67,11 +92,27 @@ fun WiButton(
         )
     }
 
-    val resolvedContentColor = contentColor ?: if (containerColor == WiCss.inp || containerColor == WiCss.wb) WiCss.tx1 else WiCss.txa
+    // ✏️ Resolución de Color de Texto e Ícono (tx5 / txa / mco / white)
+    val resolvedContentColor = contentColor ?: when {
+        containerColor != null -> if (containerColor == WiCss.inp || containerColor == WiCss.wb) WiCss.tx5 else WiCss.txa
+        variant == WiButtonVariant.Primary -> WiCss.txa
+        variant == WiButtonVariant.Secondary -> WiCss.tx5
+        variant == WiButtonVariant.Outline -> WiCss.mco
+        variant == WiButtonVariant.Error -> WiCss.white
+        else -> WiCss.txa
+    }
+
+    // 🔲 Borde Opcional para variante Outline
+    val borderModifier = if (variant == WiButtonVariant.Outline && containerColor == null) {
+        Modifier.border(BorderStroke(1.dp, WiCss.brd), RoundedCornerShape(18.dp))
+    } else {
+        Modifier
+    }
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
+            .then(borderModifier)
             .then(backgroundModifier)
             .clickable(enabled = !loading, onClick = onClick)
             .padding(horizontal = dpSmart(15f, 1.6f, 20f), vertical = dpSmart(8f, 1.0f, 12f)),

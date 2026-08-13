@@ -92,6 +92,7 @@ object WiCss {
     val tx2       @Composable get() = LocalWiTemaColors.current.tx2
     val tx3       @Composable get() = LocalWiTemaColors.current.tx3
     val tx4       @Composable get() = LocalWiTemaColors.current.tx4
+    val tx5       @Composable get() = LocalWiTemaColors.current.tx5
     val txa       @Composable get() = LocalWiTemaColors.current.txa
     val txe       @Composable get() = LocalWiTemaColors.current.txe
     val hv        @Composable get() = LocalWiTemaColors.current.hv
