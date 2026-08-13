@@ -64,7 +64,7 @@ fun MisEmpresas(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Desliza hacia abajo para actualizar o conmuta tu hotel activo:",
+                        text = "Desliza hacia abajo para actualizar o selecciona el hotel activo:",
                         style = WiText.small,
                         color = WiCss.tx3
                     )

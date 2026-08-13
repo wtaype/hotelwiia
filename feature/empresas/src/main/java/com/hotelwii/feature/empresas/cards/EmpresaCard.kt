@@ -19,7 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material3.Icon
@@ -39,7 +40,8 @@ import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
- * 🏨 EmpresaCard.kt — Tarjeta visual elegante de Hotel/Empresa con badge HABILITADA/INACTIVA, GoldPill HOTEL ACTIVO, Ubicación Desglosada y Fechas.
+ * 🏨 EmpresaCard.kt — Tarjeta visual limpia de Hotel/Empresa (Estilo 2) con header integrado,
+ * badge HOTEL ACTIVO, botones de acción en cabecera e información concisa.
  */
 @Composable
 fun EmpresaCard(
@@ -67,12 +69,13 @@ fun EmpresaCard(
             .padding(16.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            // Fila 1: Nombre Comercial del Hotel + Badges (HABILITADA / INACTIVA + HOTEL ACTIVO)
+            // Fila 1 (Header): Icono + Nombre/Estado + (Badge Actual & Acciones Editar/Eliminar)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Izquierda: Icono de Casa/Hotel y Nombres
                 Row(
                     modifier = Modifier.weight(1f, fill = false),
                     verticalAlignment = Alignment.CenterVertically
@@ -85,10 +88,10 @@ fun EmpresaCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = WiIcons.Building,
+                            imageVector = Icons.Rounded.Home,
                             contentDescription = null,
                             tint = WiCss.mco,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
 
@@ -104,7 +107,7 @@ fun EmpresaCard(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = if (estaHabilitada) "• HABILITADA (${empresa.estado?.uppercase() ?: "ACTIVO"})" else "• INACTIVA",
+                            text = if (estaHabilitada) "• HABILITADA" else "• INACTIVA",
                             style = WiText.tiny,
                             color = if (estaHabilitada) WiCss.success else WiCss.error,
                             fontWeight = FontWeight.Bold
@@ -112,115 +115,18 @@ fun EmpresaCard(
                     }
                 }
 
-                if (isActiva) {
-                    GoldPill(text = "HOTEL ACTIVO")
-                }
-            }
+                Spacer(Modifier.width(6.dp))
 
-            // Fila 2: Razón Social y RUC
-            if (empresa.razonSocial.isNotBlank() || empresa.ruc.isNotBlank()) {
-                val textoRucRS = listOfNotNull(
-                    if (empresa.ruc.isNotBlank()) "RUC: ${empresa.ruc}" else null,
-                    if (empresa.razonSocial.isNotBlank()) empresa.razonSocial else null
-                ).joinToString(" • ")
-
-                Text(
-                    text = textoRucRS,
-                    style = WiText.small,
-                    color = WiCss.tx2,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            // Fila 3: Dirección & Ubicación Desglosada
-            val ubicacionCompleta = listOfNotNull(
-                empresa.direccion.takeIf { !it.isNullOrBlank() },
-                empresa.ubigeoFormateado.takeIf { it != "Sin Ubigeo" }
-            ).joinToString(" — ")
-
-            if (ubicacionCompleta.isNotBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.LocationOn,
-                        contentDescription = null,
-                        tint = WiCss.mco,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = ubicacionCompleta,
-                        style = WiText.small,
-                        color = WiCss.tx3,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-
-            // Fila 4: Contactos (Celular, Teléfono Fijo y Email)
-            val contactosList = listOfNotNull(
-                empresa.celular?.takeIf { it.isNotBlank() }?.let { "Cel/WA: $it" },
-                empresa.telefono?.takeIf { it.isNotBlank() }?.let { "Fijo: $it" },
-                empresa.email?.takeIf { it.isNotBlank() }
-            ).joinToString(" • ")
-
-            if (contactosList.isNotBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.Phone,
-                        contentDescription = null,
-                        tint = WiCss.tx3,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = contactosList,
-                        style = WiText.small,
-                        color = WiCss.tx3,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(4.dp))
-
-            // Fila 5: Botones de Acción (Seleccionar, Editar ✏️, Eliminar 🗑️)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (!isActiva) {
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(999.dp))
-                            .background(WiCss.mco.copy(alpha = 0.15f))
-                            .clickable { onSeleccionar(empresa) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.CheckCircle,
-                            contentDescription = null,
-                            tint = WiCss.mco,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = "Seleccionar Hotel",
-                            style = WiText.small,
-                            color = WiCss.mco,
-                            fontWeight = FontWeight.Bold
-                        )
+                // Derecha: Badge de Hotel Activo + Botones Editar y Eliminar ordenados en la cabecera
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    if (isActiva) {
+                        GoldPill(text = "ACTUAL")
+                        Spacer(Modifier.width(4.dp))
                     }
-                } else {
-                    Spacer(Modifier.width(1.dp))
-                }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     IconButton(
                         onClick = { onEditar(empresa) },
                         modifier = Modifier.size(32.dp)
@@ -246,6 +152,91 @@ fun EmpresaCard(
                     }
                 }
             }
+
+            // Fila 2: Información Fiscal con Icono de Información (RUC & Razón Social)
+            if (empresa.ruc.isNotBlank() || empresa.razonSocial.isNotBlank()) {
+                val textoRucRS = listOfNotNull(
+                    if (empresa.ruc.isNotBlank()) "RUC: ${empresa.ruc}" else null,
+                    if (empresa.razonSocial.isNotBlank()) empresa.razonSocial else null
+                ).joinToString(" • ")
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Info,
+                        contentDescription = null,
+                        tint = WiCss.tx3,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = textoRucRS,
+                        style = WiText.small,
+                        color = WiCss.tx2,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // Fila 3: Dirección & Ubicación con Icono
+            val ubicacionCompleta = listOfNotNull(
+                empresa.direccion.takeIf { !it.isNullOrBlank() },
+                empresa.ubigeoFormateado.takeIf { it != "Sin Ubigeo" }
+            ).joinToString(" — ")
+
+            if (ubicacionCompleta.isNotBlank()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.LocationOn,
+                        contentDescription = null,
+                        tint = WiCss.tx3,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = ubicacionCompleta,
+                        style = WiText.small,
+                        color = WiCss.tx3,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // Botón de selección cuando la tarjeta no está activa
+            if (!isActiva) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(WiCss.mco.copy(alpha = 0.12f))
+                            .clickable { onSeleccionar(empresa) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = WiCss.mco,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = "Seleccionar como Hotel Activo",
+                            style = WiText.small,
+                            color = WiCss.mco,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
