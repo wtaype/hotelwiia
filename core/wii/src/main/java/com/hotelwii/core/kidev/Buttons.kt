@@ -29,7 +29,7 @@ import com.hotelwii.core.kicss.dpSmart
 import com.hotelwii.core.kicss.fPoppins
 
 /**
- * 🔘 Buttons.kt — Botones y Pills Atómicos de HotelWii.
+ * 🔘 Buttons.kt — Botones y Pills Atómicos de HotelWii con contraste de color inteligente.
  */
 @Composable
 fun GoldPill(text: String, modifier: Modifier = Modifier) {
@@ -50,7 +50,8 @@ fun WiButton(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     loading: Boolean = false,
-    containerColor: Color? = null
+    containerColor: Color? = null,
+    contentColor: Color? = null
 ) {
     val alpha = if (loading) 0.5f else 1.0f
     val backgroundModifier = if (containerColor != null) {
@@ -66,6 +67,8 @@ fun WiButton(
         )
     }
 
+    val resolvedContentColor = contentColor ?: if (containerColor == WiCss.inp || containerColor == WiCss.wb) WiCss.tx1 else WiCss.txa
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
@@ -75,19 +78,19 @@ fun WiButton(
         contentAlignment = Alignment.Center
     ) {
         if (loading) {
-            CircularProgressIndicator(color = WiCss.white, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+            CircularProgressIndicator(color = resolvedContentColor, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
         } else {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 if (icon != null) {
-                    Icon(icon, null, tint = WiCss.white, modifier = Modifier.size(FzSmart.buttonIcon))
+                    Icon(icon, null, tint = resolvedContentColor, modifier = Modifier.size(FzSmart.buttonIcon))
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(
                     text = text,
-                    color = WiCss.txa,
+                    color = resolvedContentColor,
                     fontFamily = fPoppins,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = FzSmart.button

@@ -3,25 +3,23 @@ package com.hotelwii.feature.cuenta
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.hotelwii.core.kicss.WiCss
 import com.hotelwii.core.kidev.FadeMain
 import com.hotelwii.core.kidev.WiDialog
+import com.hotelwii.core.kidev.WiMessengerHost
+import com.hotelwii.core.kidev.WiMsgType
+import com.hotelwii.core.kidev.rememberWiMessenger
 import com.hotelwii.feature.cuenta.tabs.Ajustes
 import com.hotelwii.feature.cuenta.tabs.General
 import com.hotelwii.feature.cuenta.tabs.Perfil
 import com.hotelwii.feature.cuenta.tabs.Seguridad
 
-import androidx.compose.runtime.LaunchedEffect
-import com.hotelwii.core.kidev.WiMessengerHost
-import com.hotelwii.core.kidev.WiMsgType
-import com.hotelwii.core.kidev.rememberWiMessenger
-
 /**
- * 🏨 CuentaPantalla.kt — Pantalla Maestra del Módulo Cuenta integrada con WiMessengerHost (0ms Latency).
+ * 🏨 CuentaPantalla.kt — Pantalla Maestra del Módulo Cuenta (General, Perfil, Seguridad, Ajustes).
  */
 @Composable
 fun CuentaPantalla(
