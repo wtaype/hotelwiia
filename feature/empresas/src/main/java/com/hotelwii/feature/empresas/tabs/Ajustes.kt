@@ -35,13 +35,14 @@ import com.hotelwii.core.kicss.WiText
 import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.core.kidev.WiButton
 import com.hotelwii.core.kidev.WiField
-import com.hotelwii.core.kidev.WiSelect
+import com.hotelwii.core.kidev.WiSelectAvance
+import com.hotelwii.core.kidev.WiSelectOption
 import com.hotelwii.core.kidev.WiSwitch
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
  * ⚙️ Ajustes.kt — Pestaña 3: Configuración Fiscal SUNAT y Series del Hotel Seleccionado.
- * Incorpora WiSelect para conmutar entre cualquier hotel del usuario y switches reactivos 0ms.
+ * Incorpora WiSelect (10/10 Sin Emojis) para conmutar entre cualquier hotel del usuario y la moneda principal.
  */
 @Composable
 fun Ajustes(
@@ -83,9 +84,6 @@ fun Ajustes(
 
     val hotelActual = hotelSeleccionado ?: empresas.first()
 
-    var notaVenta by remember(hotelActual) { mutableStateOf(hotelActual.notaVenta) }
-    var boleta by remember(hotelActual) { mutableStateOf(hotelActual.boleta) }
-    var factura by remember(hotelActual) { mutableStateOf(hotelActual.factura) }
     var serieBoleta by remember(hotelActual) { mutableStateOf(hotelActual.serieBoleta) }
     var serieFactura by remember(hotelActual) { mutableStateOf(hotelActual.serieFactura) }
     var serieNota by remember(hotelActual) { mutableStateOf(hotelActual.serieNota) }
@@ -95,9 +93,21 @@ fun Ajustes(
     val scrollState = rememberScrollState()
 
     val opcionesHoteles = remember(empresas) {
-        empresas.map { it.nombreComercial.ifBlank { "Hotel Sin Nombre" } }
+        empresas.map { 
+            WiSelectOption(
+                value = it.id ?: "",
+                label = it.nombreComercial.ifBlank { "Hotel Sin Nombre" },
+                description = "RUC: ${it.ruc.ifBlank { "No registrado" }}"
+            )
+        }
     }
-    val nombreHotelSeleccionado = hotelActual.nombreComercial.ifBlank { "Hotel Sin Nombre" }
+
+    val opcionesMoneda = remember {
+        listOf(
+            WiSelectOption("PEN", "PEN (S/) - Soles Peruanos", "Moneda oficial de comprobantes SUNAT"),
+            WiSelectOption("USD", "USD ($) - Dólares Americanos", "Moneda para facturación en USD")
+        )
+    }
 
     Box(
         modifier = modifier
@@ -145,13 +155,13 @@ fun Ajustes(
                 color = WiCss.tx3
             )
 
-            // 1. Selector de Hotel con WiSelect
+            // 1. Selector de Hotel con WiSelectAvance
             if (opcionesHoteles.isNotEmpty()) {
-                WiSelect(
-                    selectedOption = nombreHotelSeleccionado,
+                WiSelectAvance(
+                    selectedValue = hotelActual.id ?: "",
                     options = opcionesHoteles,
-                    onOptionSelected = { nombreSeleccionado ->
-                        val encontrado = empresas.firstOrNull { it.nombreComercial == nombreSeleccionado }
+                    onOptionSelected = { opcion ->
+                        val encontrado = empresas.firstOrNull { it.id == opcion.value }
                         if (encontrado != null) {
                             onSeleccionarHotel(encontrado)
                         }
@@ -232,26 +242,22 @@ fun Ajustes(
 
             Spacer(Modifier.height(4.dp))
 
-            // Fila de Impuestos & Moneda
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                WiField(
-                    value = impuestoStr,
-                    onValueChange = { impuestoStr = it },
-                    label = "Tasa de IGV / Impuesto (%)",
-                    leadingIcon = Icons.Rounded.Info,
-                    modifier = Modifier.weight(1f)
-                )
+            // Selector WiSelectAvance de Moneda Principal
+            WiSelectAvance(
+                selectedValue = moneda,
+                options = opcionesMoneda,
+                onOptionSelected = { moneda = it.value },
+                label = "Moneda Principal del Comprobante",
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                WiField(
-                    value = moneda,
-                    onValueChange = { moneda = it.uppercase() },
-                    label = "Moneda Principal",
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            WiField(
+                value = impuestoStr,
+                onValueChange = { impuestoStr = it },
+                label = "Tasa de IGV / Impuesto (%)",
+                leadingIcon = Icons.Rounded.Info,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(Modifier.height(6.dp))
 

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material3.Icon
@@ -38,7 +39,7 @@ import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
- * 🏨 EmpresaCard.kt — Tarjeta visual elegante de Hotel/Empresa con badge HABILITADA/INACTIVA, GoldPill HOTEL ACTIVO y 1-Tap.
+ * 🏨 EmpresaCard.kt — Tarjeta visual elegante de Hotel/Empresa con badge HABILITADA/INACTIVA, GoldPill HOTEL ACTIVO, Ubicación Desglosada y Fechas.
  */
 @Composable
 fun EmpresaCard(
@@ -103,7 +104,7 @@ fun EmpresaCard(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = if (estaHabilitada) "• HABILITADA" else "• INACTIVA",
+                            text = if (estaHabilitada) "• HABILITADA (${empresa.estado?.uppercase() ?: "ACTIVO"})" else "• INACTIVA",
                             style = WiText.tiny,
                             color = if (estaHabilitada) WiCss.success else WiCss.error,
                             fontWeight = FontWeight.Bold
@@ -133,8 +134,13 @@ fun EmpresaCard(
                 )
             }
 
-            // Fila 3: Dirección & Ubigeo
-            if (!empresa.direccion.isNullOrBlank()) {
+            // Fila 3: Dirección & Ubicación Desglosada
+            val ubicacionCompleta = listOfNotNull(
+                empresa.direccion.takeIf { !it.isNullOrBlank() },
+                empresa.ubigeoFormateado.takeIf { it != "Sin Ubigeo" }
+            ).joinToString(" — ")
+
+            if (ubicacionCompleta.isNotBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Rounded.LocationOn,
@@ -144,7 +150,7 @@ fun EmpresaCard(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = empresa.direccion,
+                        text = ubicacionCompleta,
                         style = WiText.small,
                         color = WiCss.tx3,
                         maxLines = 1,
@@ -153,9 +159,14 @@ fun EmpresaCard(
                 }
             }
 
-            // Fila 4: Teléfono / Celular
-            val contacto = listOfNotNull(empresa.telefono, empresa.celular).filter { it.isNotBlank() }.joinToString(" • ")
-            if (contacto.isNotBlank()) {
+            // Fila 4: Contactos (Celular, Teléfono Fijo y Email)
+            val contactosList = listOfNotNull(
+                empresa.celular?.takeIf { it.isNotBlank() }?.let { "Cel/WA: $it" },
+                empresa.telefono?.takeIf { it.isNotBlank() }?.let { "Fijo: $it" },
+                empresa.email?.takeIf { it.isNotBlank() }
+            ).joinToString(" • ")
+
+            if (contactosList.isNotBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Rounded.Phone,
@@ -165,9 +176,11 @@ fun EmpresaCard(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = contacto,
+                        text = contactosList,
                         style = WiText.small,
-                        color = WiCss.tx3
+                        color = WiCss.tx3,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

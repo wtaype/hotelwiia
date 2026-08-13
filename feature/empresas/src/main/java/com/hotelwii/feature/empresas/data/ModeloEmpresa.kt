@@ -23,6 +23,7 @@ data class ModeloEmpresa(
     val celular: String? = null,
     val email: String? = null,
     val logo: String? = null,
+    @SerialName("sitio_web") val sitioWeb: String? = null,
 
     // 🧾 Ajustes de Facturación y Comprobantes SUNAT
     @SerialName("nota_venta") val notaVenta: Boolean = true,
@@ -33,6 +34,7 @@ data class ModeloEmpresa(
     @SerialName("serie_nota") val serieNota: String = "NV01",
     @SerialName("impuesto_porcentaje") val impuestoPorcentaje: Double = 18.00,
     val moneda: String = "PEN",
+    @SerialName("pin_sol") val pinSol: String? = null,
 
     // ⚙️ Estado y Selección Local-First
     val principal: Boolean = false,

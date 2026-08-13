@@ -69,6 +69,8 @@ object EmpresasApi {
                 set("serie_nota", empresa.serieNota)
                 set("impuesto_porcentaje", empresa.impuestoPorcentaje)
                 set("moneda", empresa.moneda)
+                set("pin_sol", empresa.pinSol ?: "")
+                set("sitio_web", empresa.sitioWeb ?: "")
             }) {
                 filter { eq("id", idActualizar) }
                 select()

@@ -52,11 +52,13 @@ import com.hotelwii.core.kicss.WiIcons
 import com.hotelwii.core.kicss.WiText
 import com.hotelwii.core.kidev.WiButton
 import com.hotelwii.core.kidev.WiField
+import com.hotelwii.core.kidev.WiSelectAvance
+import com.hotelwii.core.kidev.WiSelectOption
 import com.hotelwii.core.kidev.WiSwitch
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
- * 📝 FormularioEmpresa.kt — Formulario pro adaptado 100% a public.empresas con Doble Disparo SUNAT, validación reactiva y selector de moneda.
+ * 📝 FormularioEmpresa.kt — Formulario 100% Sincronizado con public.empresas integrado con WiSelect 10/10 (Sin Emojis).
  */
 @Composable
 fun FormularioEmpresa(
@@ -82,9 +84,25 @@ fun FormularioEmpresa(
     var logoUrl by remember(empresaExistente) { mutableStateOf(empresaExistente?.logo ?: "") }
     var moneda by remember(empresaExistente) { mutableStateOf(empresaExistente?.moneda ?: "PEN") }
     var activo by remember(empresaExistente) { mutableStateOf(empresaExistente?.esEmpresaActiva ?: true) }
+    var estado by remember(empresaExistente) { mutableStateOf(empresaExistente?.estado ?: "activo") }
 
     var mostrarMasOpciones by remember(empresaExistente) {
-        mutableStateOf(!telefono.isNullOrBlank() || !email.isNullOrBlank() || !ubigeo.isNullOrBlank() || !logoUrl.isNullOrBlank())
+        mutableStateOf(!telefono.isNullOrBlank() || !email.isNullOrBlank() || !ubigeo.isNullOrBlank() || !logoUrl.isNullOrBlank() || !departamento.isNullOrBlank())
+    }
+
+    val opcionesMoneda = remember {
+        listOf(
+            WiSelectOption("PEN", "PEN (S/) - Soles Peruanos", "Moneda nacional del Perú"),
+            WiSelectOption("USD", "USD ($) - Dólares Americanos", "Moneda internacional")
+        )
+    }
+
+    val opcionesEstado = remember {
+        listOf(
+            WiSelectOption("activo", "Habilitado / Operativo", "Hotel activo para recepción y reservas"),
+            WiSelectOption("inactivo", "Inactivo Temporal", "Pausado temporalmente"),
+            WiSelectOption("suspendido", "Suspendido", "Suspendido por administración")
+        )
     }
 
     val isRucValido = ruc.trim().length == 11 && ruc.all { it.isDigit() }
@@ -186,7 +204,7 @@ fun FormularioEmpresa(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 5. Celular / WhatsApp Recepción (Campo principal visible)
+        // 5. Celular / WhatsApp Recepción
         WiField(
             value = celular,
             onValueChange = { celular = it },
@@ -196,51 +214,26 @@ fun FormularioEmpresa(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Selector Visual de Moneda Principal
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Moneda Principal:",
-                style = WiText.small,
-                color = WiCss.tx2,
-                fontWeight = FontWeight.Medium
-            )
+        // 6. Selector WiSelect de Moneda Principal
+        WiSelectAvance(
+            selectedValue = moneda,
+            options = opcionesMoneda,
+            onOptionSelected = { moneda = it.value },
+            label = "Moneda Principal del Hotel",
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (moneda == "PEN") WiCss.mco else WiCss.inp)
-                        .clickable { moneda = "PEN" }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "PEN (S/)",
-                        style = WiText.tiny,
-                        color = if (moneda == "PEN") WiCss.tx else WiCss.tx3,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (moneda == "USD") WiCss.mco else WiCss.inp)
-                        .clickable { moneda = "USD" }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "USD ($)",
-                        style = WiText.tiny,
-                        color = if (moneda == "USD") WiCss.tx else WiCss.tx3,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
+        // 7. Selector WiSelect de Estado Administrativo
+        WiSelectAvance(
+            selectedValue = estado,
+            options = opcionesEstado,
+            onOptionSelected = { option ->
+                estado = option.value
+                activo = option.value == "activo"
+            },
+            label = "Estado Administrativo",
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // Toggle Expandible para Opciones Adicionales
         Box(
@@ -265,7 +258,7 @@ fun FormularioEmpresa(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = if (mostrarMasOpciones) "Ocultar Opciones Adicionales" else "Más Opciones (Logo, Fijo, Email, Ubigeo)",
+                        text = if (mostrarMasOpciones) "Ocultar Opciones Adicionales" else "Más Opciones (Ubicación, Logo, Fijo, Email, Ubigeo)",
                         style = WiText.body,
                         color = WiCss.mco,
                         fontWeight = FontWeight.SemiBold
@@ -281,13 +274,56 @@ fun FormularioEmpresa(
             }
         }
 
-        // Bloque Expandible
+        // Bloque Expandible con Ubicación Desglosada
         AnimatedVisibility(
             visible = mostrarMasOpciones,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    WiField(
+                        value = departamento,
+                        onValueChange = { departamento = it },
+                        label = "Departamento",
+                        leadingIcon = Icons.Rounded.Place,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    WiField(
+                        value = provincia,
+                        onValueChange = { provincia = it },
+                        label = "Provincia",
+                        leadingIcon = Icons.Rounded.Place,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    WiField(
+                        value = distrito,
+                        onValueChange = { distrito = it },
+                        label = "Distrito",
+                        leadingIcon = Icons.Rounded.Place,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    WiField(
+                        value = ubigeo,
+                        onValueChange = { ubigeo = it },
+                        label = "Ubigeo SUNAT (6 dgt)",
+                        leadingIcon = Icons.Rounded.Place,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
                 WiField(
                     value = logoUrl,
                     onValueChange = { logoUrl = it },
@@ -314,24 +350,18 @@ fun FormularioEmpresa(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                WiField(
-                    value = ubigeo,
-                    onValueChange = { ubigeo = it },
-                    label = "Código Ubigeo SUNAT (6 dígitos)",
-                    leadingIcon = Icons.Rounded.Place,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
 
         // Switch Operativo del Hotel
         WiSwitch(
             checked = activo,
-            onCheckedChange = { activo = it },
-            label = "Estado de Operación del Hotel",
-            sublabel = if (activo) "Habilitado para reservas y check-in" else "Desactivado temporalmente",
+            onCheckedChange = { 
+                activo = it 
+                estado = if (it) "activo" else "inactivo"
+            },
+            label = "Habilitado para reservas y check-in",
+            sublabel = if (activo) "El hotel está visible y listo para operar" else "Hotel desactivado temporalmente",
             activeTrackColor = WiCss.success
         )
 
@@ -370,7 +400,7 @@ fun FormularioEmpresa(
                             logo = logoUrl.trim(),
                             moneda = moneda,
                             activo = activo,
-                            estado = if (activo) "activo" else "inactivo"
+                            estado = estado
                         )
                         onGuardar(dto)
                     }
