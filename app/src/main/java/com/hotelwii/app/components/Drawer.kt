@@ -10,10 +10,14 @@ import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -21,6 +25,7 @@ import com.hotelwii.app.Rutas
 import com.hotelwii.core.Wii
 import com.hotelwii.core.kicss.WiCss
 import com.hotelwii.core.kicss.WiText
+import com.hotelwii.feature.empresas.data.CacheEmpresa
 
 /**
  * 🧩 Drawer.kt — Menú lateral desplegable ultra-delgado para HotelWii.
@@ -29,9 +34,11 @@ import com.hotelwii.core.kicss.WiText
 fun Drawer(
     rutaActiva: String,
     onSeleccionarRuta: (String) -> Unit,
-    hotelNombre: String = "Mi Hotel",
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val cacheEmpresa = remember { CacheEmpresa.getInstance(context) }
+    val hotelNombre by cacheEmpresa.empresaActivaNombreFlow.collectAsState()
     Box(
         modifier = modifier
             .fillMaxHeight()

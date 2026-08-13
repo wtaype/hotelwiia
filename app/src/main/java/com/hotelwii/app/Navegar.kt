@@ -6,6 +6,7 @@ import com.hotelwii.core.kicss.WiTemaColors
 import com.hotelwii.core.kicss.obtenerTemaColors
 import com.hotelwii.feature.auth.AuthPantalla
 import com.hotelwii.feature.cuenta.CuentaPantalla
+import com.hotelwii.feature.empresas.EmpresaPantalla
 import com.hotelwii.feature.hola.HolaScreen
 
 
@@ -35,6 +36,7 @@ fun Navegar(
                 }
             )
         }
+
         "cuenta" -> {
             CuentaPantalla(
                 tabActivaIndex = tabActivaIndex,
@@ -46,6 +48,14 @@ fun Navegar(
                 },
                 onTemaCambiado = { nombreTema ->
                     onTemaCambiado(obtenerTemaColors(nombreTema))
+                }
+            )
+        }
+        "empresas" -> {
+            EmpresaPantalla(
+                tabActivaIndex = tabActivaIndex,
+                onSeleccionarTab = { index ->
+                    rutasState.seleccionarTab(index)
                 }
             )
         }

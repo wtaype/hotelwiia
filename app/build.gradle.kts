@@ -32,6 +32,7 @@ dependencies {
     implementation(project(":feature:hola"))
     implementation(project(":feature:auth"))
     implementation(project(":feature:cuenta"))
+    implementation(project(":feature:empresas"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

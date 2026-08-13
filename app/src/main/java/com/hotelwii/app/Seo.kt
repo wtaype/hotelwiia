@@ -114,6 +114,24 @@ object Seo {
             mostrarTabs = true,
             mostrarMenuLateral = true,
             requiereLayout = true
+        ),
+        "empresas" to MetaRuta(
+            orden = 3,
+            key = "empresas",
+            nombre = "Hoteles",
+            titulo = "Gestión de Hoteles y Empresas",
+            subtitulo = "Administra tus propiedades hotelera y parámetros de facturación",
+            icono = WiIcons.Building,
+            tabs = listOf(
+                MetaTab("Mis Hoteles", Icons.Rounded.Home),
+                MetaTab("Nuevo Hotel", Icons.Rounded.Person),
+                MetaTab("Ajustes", Icons.Rounded.Settings)
+            ),
+            mostrarNavBottom = true,
+            mostrarHeader = true,
+            mostrarTabs = true,
+            mostrarMenuLateral = true,
+            requiereLayout = true
         )
     )
 

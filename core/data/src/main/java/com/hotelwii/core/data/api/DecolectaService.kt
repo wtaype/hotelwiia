@@ -103,7 +103,7 @@ object DecolectaService {
     /**
      * Consulta de DNI (RENIEC)
      */
-    suspend fun consultarDni(dni: String, token: String): ApiResultado<DniResponse> {
+    suspend fun consultarDni(dni: String, token: String = ""): ApiResultado<DniResponse> {
         return try {
             val response: HttpResponse = client.get("$BASE_URL/v1/reniec/dni") {
                 parameter("numero", dni)
@@ -126,7 +126,7 @@ object DecolectaService {
     /**
      * Consulta de RUC (SUNAT)
      */
-    suspend fun consultarRuc(ruc: String, token: String): ApiResultado<RucResponse> {
+    suspend fun consultarRuc(ruc: String, token: String = ""): ApiResultado<RucResponse> {
         return try {
             val response: HttpResponse = client.get("$BASE_URL/v1/sunat/ruc") {
                 parameter("numero", ruc)
