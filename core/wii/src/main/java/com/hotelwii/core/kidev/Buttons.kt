@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hotelwii.core.kicss.FzSmart
 import com.hotelwii.core.kicss.WiCss
@@ -41,7 +42,7 @@ enum class WiButtonVariant {
 }
 
 /**
- * 🔘 GoldPill — Píldora de estado en tono dorado/acento.
+ * 🔘 GoldPill — Píldora de estado en tono dorado/acento con protección antidesbordamiento.
  */
 @Composable
 fun GoldPill(text: String, modifier: Modifier = Modifier) {
@@ -51,7 +52,14 @@ fun GoldPill(text: String, modifier: Modifier = Modifier) {
             .background(WiCss.mco.copy(alpha = 0.15f))
             .padding(horizontal = 10.dp, vertical = 4.dp),
     ) {
-        Text(text.uppercase(), style = WiText.label, color = WiCss.mco, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = text.uppercase(),
+            style = WiText.label,
+            color = WiCss.mco,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Clip
+        )
     }
 }
 
@@ -134,7 +142,9 @@ fun WiButton(
                     color = resolvedContentColor,
                     fontFamily = fPoppins,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = FzSmart.button
+                    fontSize = FzSmart.button,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
