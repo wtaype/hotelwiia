@@ -19,6 +19,7 @@ data class EmpresaUiState(
     val hotelAjustesSeleccionado: ModeloEmpresa? = null,
     val empresaEdicion: ModeloEmpresa? = null,
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val isBuscandoRuc: Boolean = false,
     val error: String? = null,
     val mensajeExito: String? = null
@@ -38,12 +39,13 @@ class EmpresaViewModel(application: Application) : AndroidViewModel(application)
         cargarEmpresasLocalFirst()
     }
 
-    fun cargarEmpresasLocalFirst() {
+    fun cargarEmpresasLocalFirst(isRefreshManual: Boolean = false) {
         val sId = smileId
         val enCache = cacheEmpresa.obtenerListaEmpresas(sId)
         val activaEnCache = cacheEmpresa.obtenerEmpresaActiva(sId) ?: enCache.firstOrNull { it.principal } ?: enCache.firstOrNull()
 
         _uiState.value = _uiState.value.copy(
+            isRefreshing = isRefreshManual,
             empresas = enCache,
             hotelActivo = activaEnCache,
             hotelAjustesSeleccionado = _uiState.value.hotelAjustesSeleccionado ?: activaEnCache
@@ -68,14 +70,18 @@ class EmpresaViewModel(application: Application) : AndroidViewModel(application)
                             empresas = listaRemota,
                             hotelActivo = activaRes,
                             hotelAjustesSeleccionado = _uiState.value.hotelAjustesSeleccionado ?: activaRes,
-                            isLoading = false
+                            isLoading = false,
+                            isRefreshing = false,
+                            mensajeExito = if (isRefreshManual) "¡Lista de hoteles actualizada!" else _uiState.value.mensajeExito
                         )
                     },
                     onFailure = { err ->
-                        _uiState.value = _uiState.value.copy(isLoading = false)
+                        _uiState.value = _uiState.value.copy(isLoading = false, isRefreshing = false)
                     }
                 )
             }
+        } else {
+            _uiState.value = _uiState.value.copy(isRefreshing = false)
         }
     }
 
@@ -180,24 +186,80 @@ class EmpresaViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun toggleCampoEmpresa(empresa: ModeloEmpresa, campo: String, nuevoValor: Boolean) {
+        val id = empresa.id ?: return
+        val sId = smileId
+
+        val empresaModificada = when (campo) {
+            "nota_venta" -> empresa.copy(notaVenta = nuevoValor)
+            "boleta" -> empresa.copy(boleta = nuevoValor)
+            "factura" -> empresa.copy(factura = nuevoValor)
+            "activo" -> empresa.copy(activo = nuevoValor, estado = if (nuevoValor) "activo" else "inactivo")
+            else -> empresa
+        }
+
+        val nombreCampo = when (campo) {
+            "nota_venta" -> "Nota de Venta"
+            "boleta" -> "Boleta Electrónica"
+            "factura" -> "Factura Electrónica"
+            "activo" -> "Operatividad"
+            else -> campo
+        }
+
+        val estadoTexto = if (nuevoValor) "activada" else "desactivada"
+
+        // ⚡ 1. Actualización Local Instantánea (< 1ms)
+        val listaActualizada = _uiState.value.empresas.map {
+            if (it.id == id) empresaModificada else it
+        }
+        val activaActualizada = if (_uiState.value.hotelActivo?.id == id) empresaModificada else _uiState.value.hotelActivo
+        val seleccionadaActualizada = if (_uiState.value.hotelAjustesSeleccionado?.id == id) empresaModificada else _uiState.value.hotelAjustesSeleccionado
+
+        if (sId.isNotBlank()) {
+            cacheEmpresa.guardarListaEmpresas(sId, listaActualizada)
+            if (activaActualizada != null) {
+                cacheEmpresa.guardarEmpresaActiva(activaActualizada, sId)
+            }
+        }
+
+        _uiState.value = _uiState.value.copy(
+            empresas = listaActualizada,
+            hotelActivo = activaActualizada,
+            hotelAjustesSeleccionado = seleccionadaActualizada,
+            mensajeExito = "¡$nombreCampo $estadoTexto para ${empresa.nombreComercial}!"
+        )
+
+        // ⚡ 2. Persistencia en Supabase en Segundo Plano
+        viewModelScope.launch {
+            EmpresasApi.actualizarCampoBoolean(id, campo, nuevoValor)
+        }
+    }
+
     fun guardarAjustesFacturacion(
         empresaId: String,
         notaVenta: Boolean,
         boleta: Boolean,
         factura: Boolean,
+        serieBoleta: String,
+        serieFactura: String,
+        serieNota: String,
         impuesto: Double,
         moneda: String
     ) {
         if (empresaId.isBlank()) return
 
+        val sId = smileId
         val listaActualizada = _uiState.value.empresas.map {
             if (it.id == empresaId) {
                 it.copy(
                     notaVenta = notaVenta,
                     boleta = boleta,
                     factura = factura,
+                    serieBoleta = serieBoleta.uppercase().trim(),
+                    serieFactura = serieFactura.uppercase().trim(),
+                    serieNota = serieNota.uppercase().trim(),
                     impuestoPorcentaje = impuesto,
-                    moneda = moneda
+                    moneda = moneda.uppercase().trim()
                 )
             } else it
         }
@@ -206,26 +268,39 @@ class EmpresaViewModel(application: Application) : AndroidViewModel(application)
             notaVenta = notaVenta,
             boleta = boleta,
             factura = factura,
+            serieBoleta = serieBoleta.uppercase().trim(),
+            serieFactura = serieFactura.uppercase().trim(),
+            serieNota = serieNota.uppercase().trim(),
             impuestoPorcentaje = impuesto,
-            moneda = moneda
+            moneda = moneda.uppercase().trim()
         )
 
         val hotelActivoActualizado = if (_uiState.value.hotelActivo?.id == empresaId) hotelSeleccionadoActualizado else _uiState.value.hotelActivo
 
-        if (hotelActivoActualizado != null && hotelActivoActualizado.id == empresaId) {
-            cacheEmpresa.guardarEmpresaActiva(hotelActivoActualizado, smileId)
+        if (hotelActivoActualizado != null && hotelActivoActualizado.id == empresaId && sId.isNotBlank()) {
+            cacheEmpresa.guardarEmpresaActiva(hotelActivoActualizado, sId)
+        }
+
+        if (sId.isNotBlank()) {
+            cacheEmpresa.guardarListaEmpresas(sId, listaActualizada)
         }
 
         _uiState.value = _uiState.value.copy(
             empresas = listaActualizada,
             hotelActivo = hotelActivoActualizado,
             hotelAjustesSeleccionado = hotelSeleccionadoActualizado,
-            mensajeExito = "Ajustes de facturación guardados correctamente"
+            mensajeExito = "Ajustes y series de facturación guardados correctamente"
         )
 
         // Sincronización background Supabase
         viewModelScope.launch {
-            EmpresasApi.actualizarAjustesFacturacion(empresaId, notaVenta, boleta, factura, impuesto, moneda)
+            EmpresasApi.actualizarAjustesFacturacionAvanzados(
+                empresaId, notaVenta, boleta, factura,
+                serieBoleta.uppercase().trim(),
+                serieFactura.uppercase().trim(),
+                serieNota.uppercase().trim(),
+                impuesto, moneda
+            )
         }
     }
 
@@ -247,7 +322,7 @@ class EmpresaViewModel(application: Application) : AndroidViewModel(application)
                 onSuccess = {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        mensajeExito = "Hotel eliminado"
+                        mensajeExito = "Hotel '${empresa.nombreComercial}' eliminado correctamente"
                     )
                     cargarEmpresasLocalFirst()
                 },

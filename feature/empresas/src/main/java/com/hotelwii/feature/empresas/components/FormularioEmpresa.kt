@@ -31,6 +31,7 @@ import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,10 +52,11 @@ import com.hotelwii.core.kicss.WiIcons
 import com.hotelwii.core.kicss.WiText
 import com.hotelwii.core.kidev.WiButton
 import com.hotelwii.core.kidev.WiField
+import com.hotelwii.core.kidev.WiSwitch
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
- * 📝 FormularioEmpresa.kt — Formulario pro con Celular en datos principales y Teléfono Fijo en opciones adicionales expandibles.
+ * 📝 FormularioEmpresa.kt — Formulario pro adaptado 100% a public.empresas con Doble Disparo SUNAT, validación reactiva y selector de moneda.
  */
 @Composable
 fun FormularioEmpresa(
@@ -77,9 +79,29 @@ fun FormularioEmpresa(
     var telefono by remember(empresaExistente) { mutableStateOf(empresaExistente?.telefono ?: "") }
     var celular by remember(empresaExistente) { mutableStateOf(empresaExistente?.celular ?: "") }
     var email by remember(empresaExistente) { mutableStateOf(empresaExistente?.email ?: "") }
+    var logoUrl by remember(empresaExistente) { mutableStateOf(empresaExistente?.logo ?: "") }
+    var moneda by remember(empresaExistente) { mutableStateOf(empresaExistente?.moneda ?: "PEN") }
+    var activo by remember(empresaExistente) { mutableStateOf(empresaExistente?.esEmpresaActiva ?: true) }
 
     var mostrarMasOpciones by remember(empresaExistente) {
-        mutableStateOf(!telefono.isNullOrBlank() || !email.isNullOrBlank() || !ubigeo.isNullOrBlank())
+        mutableStateOf(!telefono.isNullOrBlank() || !email.isNullOrBlank() || !ubigeo.isNullOrBlank() || !logoUrl.isNullOrBlank())
+    }
+
+    val isRucValido = ruc.trim().length == 11 && ruc.all { it.isDigit() }
+    val isNombreValido = nombreComercial.trim().length >= 2
+
+    fun dispararBusquedaSunat() {
+        if (isRucValido) {
+            onConsultarRuc(ruc) { rSoc, dir, dep, prov, dist, ubig ->
+                if (rSoc.isNotBlank()) razonSocial = rSoc
+                if (nombreComercial.isBlank()) nombreComercial = rSoc
+                if (dir.isNotBlank()) direccion = dir
+                if (dep.isNotBlank()) departamento = dep
+                if (prov.isNotBlank()) provincia = prov
+                if (dist.isNotBlank()) distrito = dist
+                if (ubig.isNotBlank()) ubigeo = ubig
+            }
+        }
     }
 
     val scrollState = rememberScrollState()
@@ -97,15 +119,23 @@ fun FormularioEmpresa(
             fontWeight = FontWeight.Bold
         )
 
-        // 1. RUC del Hotel con Lupa SUNAT visible siempre
+        // 1. RUC del Hotel (Auto-trigger al 11° dígito + Ícono Lupa Clickable)
         WiField(
             value = ruc,
             onValueChange = { inputStr ->
-                if (inputStr.length <= 11 && inputStr.all { c -> c.isDigit() }) ruc = inputStr
+                if (inputStr.length <= 11 && inputStr.all { c -> c.isDigit() }) {
+                    ruc = inputStr
+                    if (inputStr.length == 11) {
+                        dispararBusquedaSunat()
+                    }
+                }
             },
             label = "RUC del Hotel (11 dígitos)",
             leadingIcon = WiIcons.Building,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isSuccess = isRucValido,
+            isError = ruc.isNotBlank() && !isRucValido,
+            errorMessage = if (ruc.isNotBlank() && !isRucValido) "El RUC debe tener 11 dígitos" else null,
             trailingIcon = {
                 if (isBuscandoRuc) {
                     CircularProgressIndicator(
@@ -115,24 +145,12 @@ fun FormularioEmpresa(
                     )
                 } else {
                     IconButton(
-                        onClick = {
-                            if (ruc.length == 11) {
-                                onConsultarRuc(ruc) { rSoc, dir, dep, prov, dist, ubig ->
-                                    if (rSoc.isNotBlank()) razonSocial = rSoc
-                                    if (nombreComercial.isBlank()) nombreComercial = rSoc
-                                    if (dir.isNotBlank()) direccion = dir
-                                    if (dep.isNotBlank()) departamento = dep
-                                    if (prov.isNotBlank()) provincia = prov
-                                    if (dist.isNotBlank()) distrito = dist
-                                    if (ubig.isNotBlank()) ubigeo = ubig
-                                }
-                            }
-                        }
+                        onClick = { dispararBusquedaSunat() }
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Search,
                             contentDescription = "Buscar RUC SUNAT",
-                            tint = if (ruc.length == 11) WiCss.mco else WiCss.tx3
+                            tint = if (isRucValido) WiCss.mco else WiCss.tx3
                         )
                     }
                 }
@@ -146,6 +164,7 @@ fun FormularioEmpresa(
             onValueChange = { nombreComercial = it },
             label = "Nombre Comercial del Hotel *",
             leadingIcon = WiIcons.Building,
+            isSuccess = isNombreValido,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -177,7 +196,53 @@ fun FormularioEmpresa(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Toggle Expandible para Opciones Adicionales (Teléfono Fijo, Email, Ubigeo)
+        // Selector Visual de Moneda Principal
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Moneda Principal:",
+                style = WiText.small,
+                color = WiCss.tx2,
+                fontWeight = FontWeight.Medium
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (moneda == "PEN") WiCss.mco else WiCss.inp)
+                        .clickable { moneda = "PEN" }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "PEN (S/)",
+                        style = WiText.tiny,
+                        color = if (moneda == "PEN") WiCss.tx else WiCss.tx3,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (moneda == "USD") WiCss.mco else WiCss.inp)
+                        .clickable { moneda = "USD" }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "USD ($)",
+                        style = WiText.tiny,
+                        color = if (moneda == "USD") WiCss.tx else WiCss.tx3,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        // Toggle Expandible para Opciones Adicionales
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -200,7 +265,7 @@ fun FormularioEmpresa(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = if (mostrarMasOpciones) "Ocultar Opciones Adicionales" else "Más Opciones (Teléfono Fijo, Email, Ubigeo)",
+                        text = if (mostrarMasOpciones) "Ocultar Opciones Adicionales" else "Más Opciones (Logo, Fijo, Email, Ubigeo)",
                         style = WiText.body,
                         color = WiCss.mco,
                         fontWeight = FontWeight.SemiBold
@@ -224,6 +289,15 @@ fun FormularioEmpresa(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 WiField(
+                    value = logoUrl,
+                    onValueChange = { logoUrl = it },
+                    label = "URL del Logo del Hotel",
+                    leadingIcon = Icons.Rounded.Share,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                WiField(
                     value = telefono,
                     onValueChange = { telefono = it },
                     label = "Teléfono Fijo Recepción",
@@ -244,13 +318,22 @@ fun FormularioEmpresa(
                 WiField(
                     value = ubigeo,
                     onValueChange = { ubigeo = it },
-                    label = "Código Ubigeo (6 dígitos)",
+                    label = "Código Ubigeo SUNAT (6 dígitos)",
                     leadingIcon = Icons.Rounded.Place,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
+
+        // Switch Operativo del Hotel
+        WiSwitch(
+            checked = activo,
+            onCheckedChange = { activo = it },
+            label = "Estado de Operación del Hotel",
+            sublabel = if (activo) "Habilitado para reservas y check-in" else "Desactivado temporalmente",
+            activeTrackColor = WiCss.success
+        )
 
         Spacer(Modifier.height(6.dp))
 
@@ -271,20 +354,26 @@ fun FormularioEmpresa(
             WiButton(
                 text = if (empresaExistente == null) "Guardar Hotel" else "Actualizar Hotel",
                 onClick = {
-                    val dto = (empresaExistente ?: ModeloEmpresa()).copy(
-                        nombreComercial = nombreComercial.trim(),
-                        razonSocial = razonSocial.trim(),
-                        ruc = ruc.trim(),
-                        direccion = direccion.trim(),
-                        departamento = departamento.trim(),
-                        provincia = provincia.trim(),
-                        distrito = distrito.trim(),
-                        ubigeo = ubigeo.trim(),
-                        telefono = telefono.trim(),
-                        celular = celular.trim(),
-                        email = email.trim()
-                    )
-                    onGuardar(dto)
+                    if (isNombreValido) {
+                        val dto = (empresaExistente ?: ModeloEmpresa()).copy(
+                            nombreComercial = nombreComercial.trim(),
+                            razonSocial = razonSocial.trim(),
+                            ruc = ruc.trim(),
+                            direccion = direccion.trim(),
+                            departamento = departamento.trim(),
+                            provincia = provincia.trim(),
+                            distrito = distrito.trim(),
+                            ubigeo = ubigeo.trim(),
+                            telefono = telefono.trim(),
+                            celular = celular.trim(),
+                            email = email.trim(),
+                            logo = logoUrl.trim(),
+                            moneda = moneda,
+                            activo = activo,
+                            estado = if (activo) "activo" else "inactivo"
+                        )
+                        onGuardar(dto)
+                    }
                 },
                 loading = isGuardando,
                 icon = Icons.Rounded.Check,

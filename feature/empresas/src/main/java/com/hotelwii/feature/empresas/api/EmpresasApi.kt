@@ -144,6 +144,29 @@ object EmpresasApi {
         }
     }
 
+    suspend fun marcarEmpresaPrincipal(smileId: String, empresaId: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            if (smileId.isBlank() || empresaId.isBlank()) return@withContext Result.failure(IllegalArgumentException("ID nulo"))
+
+            // 1. Desmarcar todas las empresas del usuario
+            client.postgrest["empresas"].update({
+                set("principal", false)
+            }) {
+                filter { eq("userId", smileId) }
+            }
+
+            // 2. Marcar exclusivamente la seleccionada
+            client.postgrest["empresas"].update({
+                set("principal", true)
+            }) {
+                filter { eq("id", empresaId) }
+            }
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun eliminarEmpresa(id: String): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
             if (id.isBlank()) return@withContext Result.failure(IllegalArgumentException("ID de empresa vacío"))

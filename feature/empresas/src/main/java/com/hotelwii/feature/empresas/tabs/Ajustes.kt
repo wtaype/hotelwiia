@@ -19,8 +19,6 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,11 +36,12 @@ import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.core.kidev.WiButton
 import com.hotelwii.core.kidev.WiField
 import com.hotelwii.core.kidev.WiSelect
+import com.hotelwii.core.kidev.WiSwitch
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
- * ⚙️ Ajustes.kt — Pestaña 3: Configuración de Facturación y Comprobantes SUNAT del Hotel Seleccionado.
- * Incorpora WiSelect para conmutar entre cualquier hotel del usuario y ajustar su facturación en tiempo real.
+ * ⚙️ Ajustes.kt — Pestaña 3: Configuración Fiscal SUNAT y Series del Hotel Seleccionado.
+ * Incorpora WiSelect para conmutar entre cualquier hotel del usuario y switches reactivos 0ms.
  */
 @Composable
 fun Ajustes(
@@ -50,21 +49,55 @@ fun Ajustes(
     hotelSeleccionado: ModeloEmpresa?,
     onSeleccionarHotel: (ModeloEmpresa) -> Unit,
     isGuardando: Boolean = false,
-    onGuardarAjustes: (empresaId: String, notaVenta: Boolean, boleta: Boolean, factura: Boolean, impuesto: Double, moneda: String) -> Unit,
+    onGuardarAjustes: (
+        empresaId: String,
+        notaVenta: Boolean,
+        boleta: Boolean,
+        factura: Boolean,
+        serieBoleta: String,
+        serieFactura: String,
+        serieNota: String,
+        impuesto: Double,
+        moneda: String
+    ) -> Unit,
+    onToggleCampo: (empresa: ModeloEmpresa, campo: String, nuevoValor: Boolean) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
-    var notaVenta by remember(hotelSeleccionado) { mutableStateOf(hotelSeleccionado?.notaVenta ?: true) }
-    var boleta by remember(hotelSeleccionado) { mutableStateOf(hotelSeleccionado?.boleta ?: true) }
-    var factura by remember(hotelSeleccionado) { mutableStateOf(hotelSeleccionado?.factura ?: true) }
-    var impuestoStr by remember(hotelSeleccionado) { mutableStateOf((hotelSeleccionado?.impuestoPorcentaje ?: 18.00).toString()) }
-    var moneda by remember(hotelSeleccionado) { mutableStateOf(hotelSeleccionado?.moneda ?: "PEN") }
+    if (empresas.isEmpty()) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(WiCss.wb)
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Registra un hotel primero para configurar sus parámetros fiscales SUNAT.",
+                style = WiText.body,
+                color = WiCss.tx3
+            )
+        }
+        return
+    }
+
+    val hotelActual = hotelSeleccionado ?: empresas.first()
+
+    var notaVenta by remember(hotelActual) { mutableStateOf(hotelActual.notaVenta) }
+    var boleta by remember(hotelActual) { mutableStateOf(hotelActual.boleta) }
+    var factura by remember(hotelActual) { mutableStateOf(hotelActual.factura) }
+    var serieBoleta by remember(hotelActual) { mutableStateOf(hotelActual.serieBoleta) }
+    var serieFactura by remember(hotelActual) { mutableStateOf(hotelActual.serieFactura) }
+    var serieNota by remember(hotelActual) { mutableStateOf(hotelActual.serieNota) }
+    var impuestoStr by remember(hotelActual) { mutableStateOf(hotelActual.impuestoPorcentaje.toString()) }
+    var moneda by remember(hotelActual) { mutableStateOf(hotelActual.moneda) }
 
     val scrollState = rememberScrollState()
 
     val opcionesHoteles = remember(empresas) {
         empresas.map { it.nombreComercial.ifBlank { "Hotel Sin Nombre" } }
     }
-    val nombreHotelSeleccionado = hotelSeleccionado?.nombreComercial?.ifBlank { "Hotel Sin Nombre" } ?: "Seleccionar Hotel"
+    val nombreHotelSeleccionado = hotelActual.nombreComercial.ifBlank { "Hotel Sin Nombre" }
 
     Box(
         modifier = modifier
@@ -101,13 +134,13 @@ fun Ajustes(
                     )
                 }
 
-                if (hotelSeleccionado?.principal == true) {
+                if (hotelActual.principal) {
                     GoldPill(text = "HOTEL ACTIVO")
                 }
             }
 
             Text(
-                text = "Selecciona el hotel para configurar sus comprobantes permitidos en recepción y parámetros tributarios.",
+                text = "Selecciona el hotel para configurar sus comprobantes permitidos y series de emisión SUNAT:",
                 style = WiText.small,
                 color = WiCss.tx3
             )
@@ -130,29 +163,72 @@ fun Ajustes(
 
             Spacer(Modifier.height(2.dp))
 
-            // 2. Switch Nota de Venta
-            AjusteSwitchRow(
-                titulo = "Notas de Venta Internas",
-                subtitulo = "Comprobantes de consumo interno para huéspedes (sin enviar a SUNAT)",
-                checked = notaVenta,
-                onCheckedChange = { notaVenta = it }
+            // 2. Switches Apple Pro Reactivos (0ms)
+            WiSwitch(
+                checked = hotelActual.notaVenta,
+                onCheckedChange = { nuevoValor ->
+                    onToggleCampo(hotelActual, "nota_venta", nuevoValor)
+                },
+                label = "Notas de Venta Internas",
+                sublabel = "Serie predeterminada: ${hotelActual.serieNota} • Comprobantes de consumo interno",
+                activeTrackColor = WiCss.success
             )
 
-            // 3. Switch Boleta Electrónica
-            AjusteSwitchRow(
-                titulo = "Boletas Electrónicas (B001)",
-                subtitulo = "Emisión de boletas electrónicas oficiales a personas naturales con DNI",
-                checked = boleta,
-                onCheckedChange = { boleta = it }
+            WiSwitch(
+                checked = hotelActual.boleta,
+                onCheckedChange = { nuevoValor ->
+                    onToggleCampo(hotelActual, "boleta", nuevoValor)
+                },
+                label = "Boletas de Venta Electrónicas",
+                sublabel = "Serie predeterminada: ${hotelActual.serieBoleta} • Emisión oficial a DNI",
+                activeTrackColor = WiCss.success
             )
 
-            // 4. Switch Factura Electrónica
-            AjusteSwitchRow(
-                titulo = "Facturas Electrónicas (F001)",
-                subtitulo = "Emisión de facturas electrónicas oficiales a empresas con RUC",
-                checked = factura,
-                onCheckedChange = { factura = it }
+            WiSwitch(
+                checked = hotelActual.factura,
+                onCheckedChange = { nuevoValor ->
+                    onToggleCampo(hotelActual, "factura", nuevoValor)
+                },
+                label = "Facturas Electrónicas RUC",
+                sublabel = "Serie predeterminada: ${hotelActual.serieFactura} • Emisión oficial a RUC",
+                activeTrackColor = WiCss.mco
             )
+
+            Spacer(Modifier.height(4.dp))
+
+            // 📑 Sección Series SUNAT Editables
+            Text(
+                text = "Series de Comprobantes SUNAT",
+                style = WiText.body,
+                color = WiCss.tx1,
+                fontWeight = FontWeight.Bold
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                WiField(
+                    value = serieNota,
+                    onValueChange = { serieNota = it.uppercase() },
+                    label = "Serie Nota",
+                    modifier = Modifier.weight(1f)
+                )
+
+                WiField(
+                    value = serieBoleta,
+                    onValueChange = { serieBoleta = it.uppercase() },
+                    label = "Serie Boleta",
+                    modifier = Modifier.weight(1f)
+                )
+
+                WiField(
+                    value = serieFactura,
+                    onValueChange = { serieFactura = it.uppercase() },
+                    label = "Serie Factura",
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             Spacer(Modifier.height(4.dp))
 
@@ -181,57 +257,26 @@ fun Ajustes(
 
             // Botón Guardar Ajustes
             WiButton(
-                text = "Guardar Ajustes de Facturación",
+                text = "Guardar Ajustes y Series SUNAT",
                 onClick = {
-                    val empId = hotelSeleccionado?.id ?: return@WiButton
+                    val empId = hotelActual.id ?: return@WiButton
                     val imp = impuestoStr.toDoubleOrNull() ?: 18.00
-                    onGuardarAjustes(empId, notaVenta, boleta, factura, imp, moneda)
+                    onGuardarAjustes(
+                        empId,
+                        hotelActual.notaVenta,
+                        hotelActual.boleta,
+                        hotelActual.factura,
+                        serieBoleta,
+                        serieFactura,
+                        serieNota,
+                        imp,
+                        moneda
+                    )
                 },
                 loading = isGuardando,
                 icon = Icons.Rounded.Check,
                 modifier = Modifier.fillMaxWidth()
             )
         }
-    }
-}
-
-@Composable
-private fun AjusteSwitchRow(
-    titulo: String,
-    subtitulo: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = titulo,
-                style = WiText.body,
-                color = WiCss.tx1,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = subtitulo,
-                style = WiText.small,
-                color = WiCss.tx3
-            )
-        }
-
-        Spacer(Modifier.width(10.dp))
-
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = WiCss.mco,
-                checkedTrackColor = WiCss.mco.copy(alpha = 0.3f),
-                uncheckedThumbColor = WiCss.tx3,
-                uncheckedTrackColor = WiCss.inp
-            )
-        )
     }
 }
