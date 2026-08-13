@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 /**
  * 🧭 RutasState — Controlador de estado de navegación reactivo y ultra-rápido (< 0.1ms).
  */
-class RutasState(rutaInicial: String = "hola") {
+class RutasState(rutaInicial: String = Seo.PANTALLA_INICIAL) {
     var rutaActual by mutableStateOf(rutaInicial)
         private set
 
@@ -42,7 +42,7 @@ class RutasState(rutaInicial: String = "hola") {
 }
 
 @Composable
-fun rememberRutas(rutaInicial: String = "hola"): RutasState {
+fun rememberRutas(rutaInicial: String = Seo.PANTALLA_INICIAL): RutasState {
     return remember(rutaInicial) { RutasState(rutaInicial) }
 }
 

@@ -7,7 +7,6 @@ import com.hotelwii.core.kidev.WiTemas
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
 import com.hotelwii.feature.auth.data.CacheSmile
 
 /**
@@ -21,10 +20,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val cacheSmile = CacheSmile.getInstance(application)
 
     /**
-     * Resuelve la ruta inicial sincrónicamente en RAM (< 0.1ms) para evitar parpadeos
+     * Resuelve la ruta inicial sincrónicamente en RAM (< 0.1ms) consultando Seo.PANTALLA_INICIAL
      */
-    val rutaInicial: String = if (cacheSmile.hasSesion()) "hola" else "auth"
-
+    val rutaInicial: String = if (cacheSmile.hasSesion()) Seo.PANTALLA_INICIAL else "auth"
 
     /**
      * Sincroniza y guarda la nueva preferencia de tema en WiStore

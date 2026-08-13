@@ -39,17 +39,18 @@ data class MetaRuta(
 
 object Seo {
     /**
-     * 🏠 PANTALLA_INICIAL: Constante Single Source of Truth para la ruta por defecto ("hola").
+     * 🏠 PANTALLA_INICIAL: Constante Single Source of Truth para la ruta por defecto.
+     * Cambia esta constante por "empresas", "hola", "habitaciones", etc. para controlar la portada global de la app.
      */
-    const val PANTALLA_INICIAL = "hola"
+    const val PANTALLA_INICIAL = "empresas"
 
     /**
      * 📌 METADATOS: Single Source of Truth ordenado numéricamente mediante `orden`.
      */
     val METADATOS = mapOf(
-        PANTALLA_INICIAL to MetaRuta(
+        "hola" to MetaRuta(
             orden = 1,
-            key = PANTALLA_INICIAL,
+            key = "hola",
             nombre = "Hola",
             titulo = "¡Hola HotelWii! 🏨✨",
             subtitulo = "Super App de Gestión Hotelera - Huacachina, Ica",
@@ -135,5 +136,5 @@ object Seo {
         )
     )
 
-    val DEFAULT = METADATOS[PANTALLA_INICIAL]!!
+    val DEFAULT: MetaRuta get() = METADATOS[PANTALLA_INICIAL] ?: METADATOS["empresas"]!!
 }

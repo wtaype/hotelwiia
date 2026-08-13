@@ -9,7 +9,6 @@ import com.hotelwii.feature.cuenta.CuentaPantalla
 import com.hotelwii.feature.empresas.EmpresaPantalla
 import com.hotelwii.feature.hola.HolaScreen
 
-
 /**
  * 🧭 Navegar.kt — Enrutador Composable Sincrónico Ultra-Rápido (< 0.1ms).
  * Conmuta entre módulos feature aceptando tabActivaIndex dinámico por página.
@@ -32,11 +31,10 @@ fun Navegar(
         "auth" -> {
             AuthPantalla(
                 onAuthExitosa = {
-                    rutasState.navegarA("hola")
+                    rutasState.navegarA(Seo.PANTALLA_INICIAL)
                 }
             )
         }
-
         "cuenta" -> {
             CuentaPantalla(
                 tabActivaIndex = tabActivaIndex,
@@ -67,4 +65,3 @@ fun Navegar(
         }
     }
 }
-
