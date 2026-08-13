@@ -22,7 +22,7 @@ fun NuevoEmpresa(
     empresaExistente: ModeloEmpresa? = null,
     isBuscandoRuc: Boolean = false,
     isGuardando: Boolean = false,
-    onConsultarRuc: (String, (String, String, String, String, String, String) -> Unit) -> Unit,
+    onConsultarRuc: (String, (String, String, String, String, String, String, String) -> Unit) -> Unit,
     onGuardar: (ModeloEmpresa) -> Unit,
     onCancelar: () -> Unit = {},
     modifier: Modifier = Modifier

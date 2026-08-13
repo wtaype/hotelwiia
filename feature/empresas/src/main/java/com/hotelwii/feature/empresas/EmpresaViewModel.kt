@@ -3,6 +3,8 @@ package com.hotelwii.feature.empresas
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.hotelwii.core.kidev.WiStore
+import com.hotelwii.core.kidev.wiStore
 import com.hotelwii.feature.auth.data.CacheSmile
 import com.hotelwii.feature.empresas.api.EmpresasApi
 import com.hotelwii.feature.empresas.api.SunatApi
@@ -21,6 +23,8 @@ data class EmpresaUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val isBuscandoRuc: Boolean = false,
+    val rucEstadoValidacion: String? = null, // ej: "ACTIVO / HABIDO"
+    val proveedorConsultaRuc: String? = null, // ej: "SUNAT Directo (apis.net.pe)"
     val error: String? = null,
     val mensajeExito: String? = null
 )
@@ -28,6 +32,7 @@ data class EmpresaUiState(
 class EmpresaViewModel(application: Application) : AndroidViewModel(application) {
     private val cacheSmile = CacheSmile.getInstance(application)
     private val cacheEmpresa = CacheEmpresa.getInstance(application)
+    private val store: WiStore = wiStore(application)
 
     private val _uiState = MutableStateFlow(EmpresaUiState())
     val uiState: StateFlow<EmpresaUiState> = _uiState.asStateFlow()
@@ -112,31 +117,40 @@ class EmpresaViewModel(application: Application) : AndroidViewModel(application)
         _uiState.value = _uiState.value.copy(hotelAjustesSeleccionado = empresa)
     }
 
+    /**
+     * ⚡ Consulta RUC con Motor Cascading de 4 Niveles (Sin Límites)
+     */
     fun consultarRuc(
         ruc: String,
-        onResultado: (razonSocial: String, direccion: String, departamento: String, provincia: String, distrito: String, ubigeo: String) -> Unit
+        onResultado: (razonSocial: String, direccion: String, departamento: String, provincia: String, distrito: String, ubigeo: String, estadoCondicion: String) -> Unit
     ) {
         if (ruc.length != 11) {
             _uiState.value = _uiState.value.copy(error = "Ingresa un RUC válido de 11 dígitos")
             return
         }
 
+        val tokenPersonalDueno = store.get("mi_api_decolecta", "")
         _uiState.value = _uiState.value.copy(isBuscandoRuc = true)
+
         viewModelScope.launch {
-            val res = SunatApi.consultarRuc(ruc)
+            val res = SunatApi.consultarRucSunat(ruc, tokenPersonalDueno)
             res.fold(
                 onSuccess = { rucData ->
+                    val estadoCond = "${rucData.estado} / ${rucData.condicion}"
                     _uiState.value = _uiState.value.copy(
                         isBuscandoRuc = false,
-                        mensajeExito = "RUC encontrado: ${rucData.nombreEmpresa}"
+                        rucEstadoValidacion = estadoCond,
+                        proveedorConsultaRuc = rucData.proveedorOrigen,
+                        mensajeExito = "RUC encontrado vía ${rucData.proveedorOrigen}: ${rucData.nombreComercial}"
                     )
                     onResultado(
-                        rucData.nombreEmpresa,
-                        rucData.direccionCompleta,
-                        rucData.departamento ?: "",
-                        rucData.provincia ?: "",
-                        rucData.distrito ?: "",
-                        ""
+                        rucData.razonSocial,
+                        rucData.direccion,
+                        rucData.departamento,
+                        rucData.provincia,
+                        rucData.distrito,
+                        rucData.ubigeo,
+                        estadoCond
                     )
                 },
                 onFailure = { err ->

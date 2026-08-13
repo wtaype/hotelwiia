@@ -58,14 +58,14 @@ import com.hotelwii.core.kidev.WiSwitch
 import com.hotelwii.feature.empresas.data.ModeloEmpresa
 
 /**
- * 📝 FormularioEmpresa.kt — Formulario 100% Sincronizado con public.empresas integrado con WiSelect 10/10 (Sin Emojis).
+ * 📝 FormularioEmpresa.kt — Formulario Optimizado (Opción 1: Switch de Operatividad Libre de Redundancia).
  */
 @Composable
 fun FormularioEmpresa(
     empresaExistente: ModeloEmpresa? = null,
     isBuscandoRuc: Boolean = false,
     isGuardando: Boolean = false,
-    onConsultarRuc: (String, (String, String, String, String, String, String) -> Unit) -> Unit,
+    onConsultarRuc: (String, (String, String, String, String, String, String, String) -> Unit) -> Unit,
     onGuardar: (ModeloEmpresa) -> Unit,
     onCancelar: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -84,7 +84,7 @@ fun FormularioEmpresa(
     var logoUrl by remember(empresaExistente) { mutableStateOf(empresaExistente?.logo ?: "") }
     var moneda by remember(empresaExistente) { mutableStateOf(empresaExistente?.moneda ?: "PEN") }
     var activo by remember(empresaExistente) { mutableStateOf(empresaExistente?.esEmpresaActiva ?: true) }
-    var estado by remember(empresaExistente) { mutableStateOf(empresaExistente?.estado ?: "activo") }
+    val estado by remember(empresaExistente) { mutableStateOf(empresaExistente?.estado ?: "activo") }
 
     var mostrarMasOpciones by remember(empresaExistente) {
         mutableStateOf(!telefono.isNullOrBlank() || !email.isNullOrBlank() || !ubigeo.isNullOrBlank() || !logoUrl.isNullOrBlank() || !departamento.isNullOrBlank())
@@ -97,20 +97,12 @@ fun FormularioEmpresa(
         )
     }
 
-    val opcionesEstado = remember {
-        listOf(
-            WiSelectOption("activo", "Habilitado / Operativo", "Hotel activo para recepción y reservas"),
-            WiSelectOption("inactivo", "Inactivo Temporal", "Pausado temporalmente"),
-            WiSelectOption("suspendido", "Suspendido", "Suspendido por administración")
-        )
-    }
-
     val isRucValido = ruc.trim().length == 11 && ruc.all { it.isDigit() }
     val isNombreValido = nombreComercial.trim().length >= 2
 
     fun dispararBusquedaSunat() {
         if (isRucValido) {
-            onConsultarRuc(ruc) { rSoc, dir, dep, prov, dist, ubig ->
+            onConsultarRuc(ruc) { rSoc, dir, dep, prov, dist, ubig, estCond ->
                 if (rSoc.isNotBlank()) razonSocial = rSoc
                 if (nombreComercial.isBlank()) nombreComercial = rSoc
                 if (dir.isNotBlank()) direccion = dir
@@ -223,18 +215,6 @@ fun FormularioEmpresa(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 7. Selector WiSelect de Estado Administrativo
-        WiSelectAvance(
-            selectedValue = estado,
-            options = opcionesEstado,
-            onOptionSelected = { option ->
-                estado = option.value
-                activo = option.value == "activo"
-            },
-            label = "Estado Administrativo",
-            modifier = Modifier.fillMaxWidth()
-        )
-
         // Toggle Expandible para Opciones Adicionales
         Box(
             modifier = Modifier
@@ -258,7 +238,7 @@ fun FormularioEmpresa(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = if (mostrarMasOpciones) "Ocultar Opciones Adicionales" else "Más Opciones (Ubicación, Logo, Fijo, Email, Ubigeo)",
+                        text = if (mostrarMasOpciones) "Ocultar Opciones de la Empresa" else "Más Opciones de la Empresa",
                         style = WiText.body,
                         color = WiCss.mco,
                         fontWeight = FontWeight.SemiBold
@@ -353,13 +333,10 @@ fun FormularioEmpresa(
             }
         }
 
-        // Switch Operativo del Hotel
+        // Switch Operativo del Hotel (Control Único del Cliente)
         WiSwitch(
             checked = activo,
-            onCheckedChange = { 
-                activo = it 
-                estado = if (it) "activo" else "inactivo"
-            },
+            onCheckedChange = { activo = it },
             label = "Habilitado para reservas y check-in",
             sublabel = if (activo) "El hotel está visible y listo para operar" else "Hotel desactivado temporalmente",
             activeTrackColor = WiCss.success

@@ -47,6 +47,7 @@ data class RucResponse(
     @SerialName("departamento") val departamento: String? = null,
     @SerialName("provincia") val provincia: String? = null,
     @SerialName("distrito") val distrito: String? = null,
+    @SerialName("ubigeo") val ubigeo: String? = null,
 
     // Compatibilidad legacy
     @SerialName("numero") val numeroLegacy: String? = null,
