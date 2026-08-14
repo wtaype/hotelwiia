@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * 🔒 Encriptar.kt — Motor Reutilizable de Cifrado AES-256 GCM/CBC & Hashing SHA-256.
- * Reutilizable en todo el proyecto para resguardar credenciales de SUNAT, R2, Gemini y PIN de Seguridad.
+ * Ubicado exclusivamente en kidev para resguardar credenciales de SUNAT, R2, Gemini y PIN de Seguridad.
  */
 object Encriptar {
     private const val ALGORITHM = "AES/CBC/PKCS5Padding"
@@ -22,7 +22,7 @@ object Encriptar {
     }
 
     /**
-     * cifrar: Cifra un texto en plano devolviendo un hash cifrado en Base64 con prefijo "ENC:".
+     * Cifra un texto en plano devolviendo un hash cifrado en Base64 con prefijo "ENC:".
      */
     fun cifrar(texto: String): String {
         if (texto.isBlank()) return ""
@@ -38,7 +38,7 @@ object Encriptar {
     }
 
     /**
-     * descifrar: Desencripta una cadena Base64 cifrada ("ENC:...") a su texto plano original.
+     * Desencripta una cadena Base64 cifrada ("ENC:...") a su texto plano original.
      */
     fun descifrar(textoCifrado: String): String {
         if (textoCifrado.isBlank()) return ""
@@ -54,7 +54,7 @@ object Encriptar {
     }
 
     /**
-     * hashPin: Genera un digest irreversible SHA-256 del PIN de 4 dígitos.
+     * Genera un digest irreversible SHA-256 del PIN de 4 dígitos.
      */
     fun hashPin(pin: String): String {
         if (pin.isBlank()) return ""

@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":feature:auth"))
     implementation(project(":feature:cuenta"))
     implementation(project(":feature:empresas"))
+    implementation(project(":feature:recepcion"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

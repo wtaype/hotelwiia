@@ -1,6 +1,7 @@
 package com.hotelwii.app
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -40,9 +41,8 @@ data class MetaRuta(
 object Seo {
     /**
      * 🏠 PANTALLA_INICIAL: Constante Single Source of Truth para la ruta por defecto.
-     * Cambia esta constante por "empresas", "hola", "habitaciones", etc. para controlar la portada global de la app.
      */
-    const val PANTALLA_INICIAL = "empresas"
+    const val PANTALLA_INICIAL = "habitaciones"
 
     /**
      * 📌 METADATOS: Single Source of Truth ordenado numéricamente mediante `orden`.
@@ -82,14 +82,14 @@ object Seo {
         "habitaciones" to MetaRuta(
             orden = 2,
             key = "habitaciones",
-            nombre = "Habitaciones",
-            titulo = "Gestión de Habitaciones",
-            subtitulo = "Mapa interactivo por pisos en tiempo real",
+            nombre = "Recepción",
+            titulo = "Gestión de Recepción",
+            subtitulo = "Centro de control de cuartos, reservas y check-in/out",
             icono = WiIcons.Building,
             tabs = listOf(
-                MetaTab("Piso 1", Icons.Rounded.Home),
-                MetaTab("Piso 2", Icons.Rounded.Home),
-                MetaTab("Suites Dunas", WiIcons.Star)
+                MetaTab("Reservas", Icons.Rounded.DateRange),
+                MetaTab("Habitaciones", Icons.Rounded.Home),
+                MetaTab("Precios", Icons.Rounded.Settings)
             ),
             mostrarNavBottom = true,
             mostrarHeader = true,

@@ -8,6 +8,7 @@ import com.hotelwii.feature.auth.AuthPantalla
 import com.hotelwii.feature.cuenta.CuentaPantalla
 import com.hotelwii.feature.empresas.EmpresaPantalla
 import com.hotelwii.feature.hola.HolaScreen
+import com.hotelwii.feature.recepcion.RecepcionPantalla
 
 /**
  * 🧭 Navegar.kt — Enrutador Composable Sincrónico Ultra-Rápido (< 0.1ms).
@@ -32,6 +33,14 @@ fun Navegar(
             AuthPantalla(
                 onAuthExitosa = {
                     rutasState.navegarA(Seo.PANTALLA_INICIAL)
+                }
+            )
+        }
+        "habitaciones" -> {
+            RecepcionPantalla(
+                tabActivaIndex = tabActivaIndex,
+                onSeleccionarTab = { index ->
+                    rutasState.seleccionarTab(index)
                 }
             )
         }

@@ -32,17 +32,18 @@ import com.hotelwii.core.kicss.dpSmart
 import com.hotelwii.core.kicss.fPoppins
 
 /**
- * 🎨 WiButtonVariant — Variantes de diseño estándar reutilizables para HotelWii.
+ * 🎛️ WiButtonVariant — Variantes de diseño estándar reutilizables para HotelWii.
  */
 enum class WiButtonVariant {
     Primary,   // Gradiente de marca (mco -> hva) con texto e ícono txa (Blanco)
     Secondary, // Fondo secundario (inp) con texto e ícono de alto contraste tx5
-    Outline,   // Sin fondo, borde sutil brd con texto e ícono de acento mco
-    Error      // Fondo semáforo error (#FF3849) con texto e ícono blanco para acciones destructivas/limpieza
+    Cancel,    // Fondo gris neutral offline (WiCss.offline) con texto tx5
+    Outline,   // Fondo neutral suave (WiCss.offline) con borde sutil brd
+    Error      // Fondo semáforo error (#FF3849 / WiCss.error) con texto e ícono blanco
 }
 
 /**
- * 🔘 GoldPill — Píldora de estado en tono dorado/acento con protección antidesbordamiento.
+ * 🏷️ GoldPill — Píldora de estado en tono dorado/acento con protección antidesbordamiento.
  */
 @Composable
 fun GoldPill(text: String, modifier: Modifier = Modifier) {
@@ -83,7 +84,8 @@ fun WiButton(
     val effectiveContainerColor = containerColor ?: when (variant) {
         WiButtonVariant.Primary -> null // Usa gradiente mco -> hva
         WiButtonVariant.Secondary -> WiCss.inp
-        WiButtonVariant.Outline -> Color.Transparent
+        WiButtonVariant.Cancel -> WiCss.offline
+        WiButtonVariant.Outline -> WiCss.offline
         WiButtonVariant.Error -> WiCss.error
     }
 
@@ -102,26 +104,27 @@ fun WiButton(
 
     // ✏️ Resolución de Color de Texto e Ícono (tx5 / txa / mco / white)
     val resolvedContentColor = contentColor ?: when {
-        containerColor != null -> if (containerColor == WiCss.inp || containerColor == WiCss.wb) WiCss.tx5 else WiCss.txa
+        containerColor != null -> if (containerColor == WiCss.inp || containerColor == WiCss.wb || containerColor == WiCss.offline) WiCss.tx5 else WiCss.txa
         variant == WiButtonVariant.Primary -> WiCss.txa
         variant == WiButtonVariant.Secondary -> WiCss.tx5
-        variant == WiButtonVariant.Outline -> WiCss.mco
+        variant == WiButtonVariant.Cancel -> WiCss.tx5
+        variant == WiButtonVariant.Outline -> WiCss.tx5
         variant == WiButtonVariant.Error -> WiCss.white
         else -> WiCss.txa
     }
 
     // 🔲 Borde Opcional para variante Outline
     val borderModifier = if (variant == WiButtonVariant.Outline && containerColor == null) {
-        Modifier.border(BorderStroke(1.dp, WiCss.brd), RoundedCornerShape(18.dp))
+        Modifier.border(BorderStroke(1.dp, WiCss.brd), RoundedCornerShape(14.dp))
     } else {
         Modifier
     }
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .then(borderModifier)
+            .clip(RoundedCornerShape(14.dp))
             .then(backgroundModifier)
+            .then(borderModifier)
             .clickable(enabled = !loading, onClick = onClick)
             .padding(horizontal = dpSmart(15f, 1.6f, 20f), vertical = dpSmart(8f, 1.0f, 12f)),
         contentAlignment = Alignment.Center
