@@ -22,11 +22,13 @@ import com.hotelwii.feature.recepcion.tabs.Precios
 import com.hotelwii.feature.recepcion.tabs.Reservas
 
 /**
- * 🏨 RecepcionPantalla.kt — Pantalla Maestra del Centro de Control de Recepción con 0 Duplicaciones de Modales.
+ * 🏨 RecepcionPantalla.kt — Pantalla Maestra del Centro de Control de Recepción.
+ * Solo la página visible activa renderiza los modales para eliminar 100% el parpadeo y la duplicación.
  */
 @Composable
 fun RecepcionPantalla(
     tabActivaIndex: Int = 0,
+    tabVisibleActual: Int = tabActivaIndex,
     onSeleccionarTab: (Int) -> Unit = {},
     viewModel: RecepcionViewModel = viewModel()
 ) {
@@ -49,7 +51,7 @@ fun RecepcionPantalla(
             .fillMaxSize()
             .background(WiCss.bg)
     ) {
-        // Renderizado directo según la página activa del Pager
+        // Renderizado directo según la subpestaña (0: Reservas, 1: Habitaciones, 2: Precios)
         when (tabActivaIndex) {
             0 -> Reservas(
                 uiState = uiState,
@@ -67,14 +69,15 @@ fun RecepcionPantalla(
                 onActualizarPrecioRapido = { id, precio -> viewModel.actualizarPrecioRapido(id, precio) },
                 onEliminarHabitacion = { id -> viewModel.eliminarHabitacion(id) }
             )
-            else -> Reservas(
+            else -> Habitaciones(
                 uiState = uiState,
-                onRefrescarReservas = { viewModel.cargarDatosLocalFirst(isRefreshManual = true) }
+                onSeleccionarHabitacion = { hab -> viewModel.seleccionarHabitacionAccion(hab) },
+                onNuevaHabitacion = { viewModel.abrirCreacionHabitacion() }
             )
         }
 
-        // Hojas Deslizable y Fijo: Se renderizan EXACTAMENTE UNA SOLA VEZ (en tabActivaIndex == 1) para evitar duplicación de ventanas en el HorizontalPager
-        if (tabActivaIndex == 1) {
+        // 🛡️ MODALES EXCLUSIVOS: Solo la página visible activa renderiza los modales (Cero parpadeo ni doble apertura)
+        if (tabActivaIndex == tabVisibleActual) {
             if (uiState.mostrarDialogCheckIn && uiState.habitacionSeleccionada != null) {
                 CheckIn(
                     habitacion = uiState.habitacionSeleccionada!!,

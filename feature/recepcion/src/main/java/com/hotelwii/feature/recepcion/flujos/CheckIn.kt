@@ -5,7 +5,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Lock
@@ -35,6 +37,7 @@ import kotlinx.coroutines.launch
 
 /**
  * 📸 CheckIn.kt — Flujo Fijo Dedicado para Check-In con Gemini Vision OCR 100% Real (Sin Mocks).
+ * Botón único full-width sin botón redundante de cancelar.
  */
 @Composable
 fun CheckIn(
@@ -182,37 +185,28 @@ fun CheckIn(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            WiButton(
-                text = "Cancelar",
-                onClick = onCerrar,
-                variant = WiButtonVariant.Cancel,
-                modifier = Modifier.weight(1f)
-            )
+        Spacer(Modifier.height(4.dp))
 
-            WiButton(
-                text = "Confirmar Check-In",
-                onClick = {
-                    val v = ModeloVenta(
-                        habitacionId = habitacion.id ?: "",
-                        tipoDoc = tipoDoc,
-                        numDoc = numDoc.trim(),
-                        clienteNombre = clienteNombre.trim().ifBlank { "Huésped Hab. ${habitacion.numero}" },
-                        nacionalidad = nacionalidad.trim(),
-                        montoAlquiler = habitacion.precio,
-                        montoAdelanto = montoAdelantoStr.toDoubleOrNull() ?: 0.0,
-                        montoTotal = habitacion.precio,
-                        observaciones = notas.trim()
-                    )
-                    onConfirmarCheckIn(v)
-                },
-                variant = WiButtonVariant.Primary,
-                icon = Icons.Rounded.Check,
-                modifier = Modifier.weight(1.2f)
-            )
-        }
+        // Botón Único Full-Width
+        WiButton(
+            text = "Confirmar Check-In",
+            onClick = {
+                val v = ModeloVenta(
+                    habitacionId = habitacion.id ?: "",
+                    tipoDoc = tipoDoc,
+                    numDoc = numDoc.trim(),
+                    clienteNombre = clienteNombre.trim().ifBlank { "Huésped Hab. ${habitacion.numero}" },
+                    nacionalidad = nacionalidad.trim(),
+                    montoAlquiler = habitacion.precio,
+                    montoAdelanto = montoAdelantoStr.toDoubleOrNull() ?: 0.0,
+                    montoTotal = habitacion.precio,
+                    observaciones = notas.trim()
+                )
+                onConfirmarCheckIn(v)
+            },
+            variant = WiButtonVariant.Primary,
+            icon = Icons.Rounded.Check,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

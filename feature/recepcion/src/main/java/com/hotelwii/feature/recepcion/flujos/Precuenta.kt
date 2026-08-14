@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import com.hotelwii.feature.recepcion.data.ModeloVenta
 
 /**
  * 📋 Precuenta.kt — Hoja Deslizable (Bottom Sheet con Drag-Handle `—`) para Desglose de Precuenta antes de Check-Out.
+ * Botón único de acción a ancho completo (100%) sin botón redundante de cerrar.
  */
 @Composable
 fun Precuenta(
@@ -85,24 +87,16 @@ fun Precuenta(
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            WiButton(
-                text = "Cerrar",
-                onClick = onCerrar,
-                variant = WiButtonVariant.Cancel,
-                modifier = Modifier.weight(1f)
-            )
+        Spacer(Modifier.height(4.dp))
 
-            WiButton(
-                text = "Proceder al Pago / Check-Out",
-                onClick = onIrAPagar,
-                variant = WiButtonVariant.Primary,
-                modifier = Modifier.weight(1.4f)
-            )
-        }
+        // Botón Único a Ancho Completo (100% visible sin truncamiento)
+        WiButton(
+            text = "Proceder al Pago / Check-Out",
+            onClick = onIrAPagar,
+            variant = WiButtonVariant.Primary,
+            icon = Icons.Rounded.ShoppingCart,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

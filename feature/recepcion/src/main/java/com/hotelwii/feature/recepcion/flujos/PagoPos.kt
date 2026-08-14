@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,6 +36,7 @@ import com.hotelwii.feature.recepcion.data.ModeloVenta
 
 /**
  * 💳 PagoPos.kt — Flujo Fijo Dedicado para Cobro POS Instantáneo, Cálculo de Vuelto & Emisión SUNAT.
+ * Botón único full-width sin botón redundante de cancelar.
  */
 @Composable
 fun PagoPos(
@@ -54,7 +57,7 @@ fun PagoPos(
         onCerrar = onCerrar,
         onVolver = onCerrar,
         titulo = "Cobro POS & Check-Out Hab. ${habitacion.numero}",
-        subtitulo = "Selección de medio de pago y emisión fiscal SUNAT",
+        subtitulo = "Selección de medio de pago",
         icono = Icons.Rounded.ShoppingCart
     ) {
         Box(
@@ -140,26 +143,17 @@ fun PagoPos(
             label = "Emisión de Comprobante"
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            WiButton(
-                text = "Cancelar",
-                onClick = onCerrar,
-                variant = WiButtonVariant.Cancel,
-                modifier = Modifier.weight(1f)
-            )
+        Spacer(Modifier.height(4.dp))
 
-            WiButton(
-                text = "Cobrar y Finalizar Check-Out",
-                onClick = {
-                    onConfirmarPagoCheckOut(metodoPago, tipoComprobante, totalOriginal.coerceAtLeast(0.0))
-                },
-                variant = WiButtonVariant.Primary,
-                icon = Icons.Rounded.Check,
-                modifier = Modifier.weight(1.4f)
-            )
-        }
+        // Botón Único Full-Width
+        WiButton(
+            text = "Cobrar y Finalizar Check-Out",
+            onClick = {
+                onConfirmarPagoCheckOut(metodoPago, tipoComprobante, totalOriginal.coerceAtLeast(0.0))
+            },
+            variant = WiButtonVariant.Primary,
+            icon = Icons.Rounded.Check,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

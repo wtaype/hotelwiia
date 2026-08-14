@@ -39,6 +39,7 @@ fun Navegar(
         "habitaciones" -> {
             RecepcionPantalla(
                 tabActivaIndex = tabActivaIndex,
+                tabVisibleActual = rutasState.tabActivaIndex,
                 onSeleccionarTab = { index ->
                     rutasState.seleccionarTab(index)
                 }
