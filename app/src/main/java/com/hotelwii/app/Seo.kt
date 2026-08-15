@@ -138,13 +138,17 @@ object Seo {
             orden = null,
             key = "actualizar",
             nombre = "Actualizar",
-            titulo = "Centro de Actualización 🚀",
+            titulo = "Centro de Actualización",
             subtitulo = "Comprobación y descarga inteligente de versiones OTA",
-            icono = WiIcons.Refresh,
-            tabs = emptyList(),
+            icono = WiIcons.SystemUpdate,
+            tabs = listOf(
+                MetaTab("Actualizar", WiIcons.SystemUpdate),
+                MetaTab("Permisos", WiIcons.Security),
+                MetaTab("Ajustes", WiIcons.Settings)
+            ),
             mostrarNavBottom = true,
             mostrarHeader = true,
-            mostrarTabs = false,
+            mostrarTabs = true,
             mostrarMenuLateral = true,
             requiereLayout = true
         )

@@ -72,7 +72,9 @@ fun Navegar(
             )
         }
         "actualizar" -> {
-            ActualizarPantalla()
+            ActualizarPantalla(
+                tabActivaIndex = tabActivaIndex
+            )
         }
         else -> {
             Modulo(

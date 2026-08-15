@@ -301,6 +301,8 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
         ModeloHabitacion(id = "1", numero = "101", piso = "Piso 1", tipo = "Simple", precio = 60.0, estado = "disponible", conBano = true, conDesayuno = false),
         ModeloHabitacion(id = "2", numero = "102", piso = "Piso 1", tipo = "Matrimonial", precio = 90.0, estado = "ocupada", conBano = true, conDesayuno = true),
         ModeloHabitacion(id = "3", numero = "201", piso = "Piso 2", tipo = "Suite Jacuzzi", precio = 150.0, estado = "disponible", conBano = true, conDesayuno = true),
-        ModeloHabitacion(id = "4", numero = "202", piso = "Piso 2", tipo = "Doble", precio = 110.0, estado = "limpieza", conBano = true, conDesayuno = false)
+        ModeloHabitacion(id = "4", numero = "202", piso = "Piso 2", tipo = "Doble", precio = 110.0, estado = "limpieza", conBano = true, conDesayuno = false),
+        ModeloHabitacion(id = "5", numero = "103", piso = "Piso 1", tipo = "Ejecutiva King", precio = 120.0, estado = "disponible", conBano = true, conTv = true, conDesayuno = true, capacidad = 2),
+        ModeloHabitacion(id = "6", numero = "104", piso = "Piso 1", tipo = "Suite Presidencial", precio = 180.0, estado = "disponible", conBano = true, conTv = true, conDesayuno = true, amenidades = "Jacuzzi, Wi-Fi 6, Smart TV 65, Frigobar", capacidad = 2)
     )
 }
