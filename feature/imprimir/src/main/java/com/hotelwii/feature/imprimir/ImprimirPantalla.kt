@@ -17,7 +17,7 @@ import com.hotelwii.feature.imprimir.tabs.General
 import com.hotelwii.feature.imprimir.tabs.Modelos
 
 /**
- * ImprimirPantalla — Pantalla Principal del Módulo de Impresión Térmica en HotelWii.
+ * 🖨️ ImprimirPantalla — Pantalla Principal del Módulo de Impresión Térmica en HotelWii.
  * Integrada con transiciones limpias FadeMain y diseño sincronizado con WiMain / Empresas.
  */
 @Composable
@@ -27,12 +27,16 @@ fun ImprimirPantalla(
 ) {
     val viewModel = remember { ImprimirViewModel(context) }
     val config by viewModel.config.collectAsState()
+    val isConectadoLocal by viewModel.isConectadoLocal.collectAsState()
+    val isConectadoNube by viewModel.isConectadoNube.collectAsState()
     val isProbando by viewModel.isProbando.collectAsState()
     val isImprimiendo by viewModel.isImprimiendo.collectAsState()
     val isEscaneando by viewModel.isEscaneando.collectAsState()
     val impresorasDetectadas by viewModel.impresorasDetectadas.collectAsState()
     val ultimoMensaje by viewModel.ultimoMensaje.collectAsState()
     val esError by viewModel.esError.collectAsState()
+    val historial by viewModel.historial.collectAsState()
+    val esReceptorActivo by viewModel.esReceptorActivo.collectAsState()
 
     Box(
         modifier = Modifier
@@ -43,9 +47,12 @@ fun ImprimirPantalla(
             when (page) {
                 0 -> General(
                     config = config,
+                    isConectadoLocal = isConectadoLocal,
+                    isConectadoNube = isConectadoNube,
                     isProbando = isProbando,
                     isImprimiendo = isImprimiendo,
                     isEscaneando = isEscaneando,
+                    esReceptorActivo = esReceptorActivo,
                     impresorasDetectadas = impresorasDetectadas,
                     ultimoMensaje = ultimoMensaje,
                     esError = esError,
@@ -62,6 +69,9 @@ fun ImprimirPantalla(
                 )
                 2 -> Ajustes(
                     config = config,
+                    esReceptorActivo = esReceptorActivo,
+                    historial = historial,
+                    onToggleReceptor = { viewModel.setReceptorActivo(it) },
                     onGuardarConfiguracion = { nuevaConfig -> viewModel.guardarConfiguracion(nuevaConfig) }
                 )
             }
