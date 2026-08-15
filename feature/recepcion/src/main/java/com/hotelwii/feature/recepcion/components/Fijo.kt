@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -39,8 +41,8 @@ import com.hotelwii.core.kicss.WiCss
 import com.hotelwii.core.kicss.WiText
 
 /**
- * 🔒 Fijo.kt — Pantalla Completa 100vh x 100vw Dedicada.
- * Cubre el 100% de la pantalla tapando todo el header superior y las pestañas.
+ * 🔒 Fijo.kt — Pantalla Completa 100vh x 100vw Dedicada con Soporte IME Teclado Inteligente.
+ * Adapta el scroll dinámicamente con imePadding() para que ningún teclado tape los inputs ni la facturación.
  */
 @Composable
 fun Fijo(
@@ -68,6 +70,8 @@ fun Fijo(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(WiCss.bg)
+                    .imePadding()
+                    .navigationBarsPadding()
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Header Propio Fijo 100% Ancho ([ ← Volver ] + Título + [ ✕ Cerrar ])
@@ -100,7 +104,7 @@ fun Fijo(
                                 )
                             }
 
-                            // Centro: Título + Acción + # Habitación
+                            // Centro: Título + Subtítulo
                             Row(
                                 modifier = Modifier.weight(1f),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -160,12 +164,12 @@ fun Fijo(
                             .background(WiCss.brd)
                     )
 
-                    // Contenido del Flujo Dedicado 100% Pantalla
+                    // Contenido del Flujo Dedicado con Scroll Inteligente
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .padding(16.dp)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
                     ) {
                         if (scrollable) {
                             Column(

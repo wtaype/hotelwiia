@@ -69,6 +69,8 @@ class GeminiService(private val context: Context) {
                 clienteNombre = "",
                 nacionalidad = "Perú",
                 tipoDoc = tipoDocDefault,
+                fechaNacimiento = "",
+                estadoCivil = "Soltero/a",
                 esExitoso = false,
                 mensajeInfo = "Clave de Gemini no configurada en Cuenta > Seguridad."
             )
@@ -92,9 +94,11 @@ class GeminiService(private val context: Context) {
                     "Extrae: " +
                     "1. 'numDoc': El número de documento (si es DNI peruano, los 8 dígitos numéricos del CUI sin guiones ni dígito verificador). " +
                     "2. 'clienteNombre': Nombres y apellidos completos del titular en orden 'PRIMER_APELLIDO SEGUNDO_APELLIDO PRENOMBRES'. " +
-                    "3. 'nacionalidad': País de nacionalidad (ej: 'Perú'). " +
+                    "3. 'nacionalidad': País de nacionalidad (ej: 'Perú', 'Colombia', 'España', etc.). " +
                     "4. 'tipoDoc': 'dni', 'pasaporte' o 'ce'. " +
-                    "Responde ÚNICAMENTE un objeto JSON válido con los campos numDoc, clienteNombre, nacionalidad, tipoDoc sin bloques markdown."
+                    "5. 'fechaNacimiento': Fecha de nacimiento en formato 'DD/MM/AAAA' (ej: '16/05/1997'). " +
+                    "6. 'estadoCivil': Estado civil (ej: 'SOLTERO', 'CASADO', 'VIUDO', 'DIVORCIADO'). " +
+                    "Responde ÚNICAMENTE un objeto JSON válido con los campos numDoc, clienteNombre, nacionalidad, tipoDoc, fechaNacimiento, estadoCivil sin bloques markdown."
 
             val jsonBody = JSONObject().apply {
                 val contentsArray = JSONArray().apply {
@@ -173,6 +177,8 @@ class GeminiService(private val context: Context) {
                             val clienteNombre = extractedJson.optString("clienteNombre", "").trim()
                             val nacionalidad = extractedJson.optString("nacionalidad", "Perú").trim()
                             val tipoDoc = extractedJson.optString("tipoDoc", tipoDocDefault).trim()
+                            val fechaNacimiento = extractedJson.optString("fechaNacimiento", "").trim()
+                            val estadoCivil = extractedJson.optString("estadoCivil", "Soltero/a").trim()
 
                             // Si numDoc viene con guion (ej: 71779978-5), tomar solo los 8 dígitos principales
                             if (numDoc.contains("-")) {
@@ -185,6 +191,8 @@ class GeminiService(private val context: Context) {
                                     clienteNombre = clienteNombre,
                                     nacionalidad = if (nacionalidad.isBlank()) "Perú" else nacionalidad,
                                     tipoDoc = if (tipoDoc.isBlank()) tipoDocDefault else tipoDoc,
+                                    fechaNacimiento = fechaNacimiento,
+                                    estadoCivil = estadoCivil,
                                     esExitoso = true,
                                     mensajeInfo = "¡DNI verificado por Gemini ($modelo)! $clienteNombre"
                                 )
@@ -207,6 +215,8 @@ class GeminiService(private val context: Context) {
                 clienteNombre = "",
                 nacionalidad = "Perú",
                 tipoDoc = tipoDocDefault,
+                fechaNacimiento = "",
+                estadoCivil = "Soltero/a",
                 esExitoso = false,
                 mensajeInfo = "No se pudo procesar con Gemini ($ultimoError). Ingresa los datos manualmente."
             )
@@ -216,6 +226,8 @@ class GeminiService(private val context: Context) {
                 clienteNombre = "",
                 nacionalidad = "Perú",
                 tipoDoc = tipoDocDefault,
+                fechaNacimiento = "",
+                estadoCivil = "Soltero/a",
                 esExitoso = false,
                 mensajeInfo = "Error en escaneo: ${e.localizedMessage ?: "Error"}"
             )
@@ -224,10 +236,12 @@ class GeminiService(private val context: Context) {
 }
 
 data class DatosHuespedParseados(
-    val numDoc: String,
-    val clienteNombre: String,
-    val nacionalidad: String,
-    val tipoDoc: String,
-    val esExitoso: Boolean,
-    val mensajeInfo: String
+    val numDoc: String = "",
+    val clienteNombre: String = "",
+    val nacionalidad: String = "Perú",
+    val tipoDoc: String = "dni",
+    val fechaNacimiento: String = "",
+    val estadoCivil: String = "Soltero/a",
+    val esExitoso: Boolean = false,
+    val mensajeInfo: String = ""
 )
