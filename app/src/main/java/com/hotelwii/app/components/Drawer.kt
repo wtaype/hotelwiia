@@ -109,6 +109,35 @@ fun Drawer(
                         )
                     }
                 }
+
+                // Enlace a Centro de Actualización
+                val isActualizar = rutaActiva == "actualizar"
+                val actBgColor = if (isActualizar) WiCss.hv.copy(alpha = 0.15f) else WiCss.inp.copy(alpha = 0.4f)
+                val actTextColor = if (isActualizar) WiCss.hv else WiCss.tx2
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(actBgColor)
+                        .clickable { onSeleccionarRuta("actualizar") }
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = com.hotelwii.core.kicss.WiIcons.Refresh,
+                        contentDescription = "Actualizar",
+                        tint = actTextColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "Actualizar",
+                        style = WiText.body,
+                        color = actTextColor,
+                        fontWeight = if (isActualizar) FontWeight.Bold else FontWeight.Medium
+                    )
+                }
             }
 
             // Footer Drawer
@@ -118,6 +147,7 @@ fun Drawer(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
                         .background(WiCss.inp)
+                        .clickable { onSeleccionarRuta("actualizar") }
                         .padding(10.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -129,7 +159,7 @@ fun Drawer(
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "${Wii.app} · ${Wii.version}",
+                            text = "${Wii.app} · ${Wii.versionFile}",
                             style = WiText.tiny,
                             color = WiCss.success,
                             fontWeight = FontWeight.Bold

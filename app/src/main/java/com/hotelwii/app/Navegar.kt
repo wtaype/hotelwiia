@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.hotelwii.app.components.Modulo
 import com.hotelwii.core.kicss.WiTemaColors
 import com.hotelwii.core.kicss.obtenerTemaColors
+import com.hotelwii.feature.actualizar.ActualizarPantalla
 import com.hotelwii.feature.auth.AuthPantalla
 import com.hotelwii.feature.cuenta.CuentaPantalla
 import com.hotelwii.feature.empresas.EmpresaPantalla
@@ -56,6 +57,9 @@ fun Navegar(
                 },
                 onTemaCambiado = { nombreTema ->
                     onTemaCambiado(obtenerTemaColors(nombreTema))
+                },
+                onNavegarRuta = { ruta ->
+                    rutasState.navegarA(ruta)
                 }
             )
         }
@@ -66,6 +70,9 @@ fun Navegar(
                     rutasState.seleccionarTab(index)
                 }
             )
+        }
+        "actualizar" -> {
+            ActualizarPantalla()
         }
         else -> {
             Modulo(

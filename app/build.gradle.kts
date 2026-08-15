@@ -11,8 +11,8 @@ android {
         applicationId = "com.hotelwii.app"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 10001
+        versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":feature:cuenta"))
     implementation(project(":feature:empresas"))
     implementation(project(":feature:recepcion"))
+    implementation(project(":feature:actualizar"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -41,3 +42,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 }
+
+
+

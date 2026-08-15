@@ -27,6 +27,7 @@ fun CuentaPantalla(
     onSeleccionarTab: (Int) -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     onTemaCambiado: (String) -> Unit = {},
+    onNavegarRuta: (String) -> Unit = {},
     viewModel: CuentaViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -62,7 +63,9 @@ fun CuentaPantalla(
                 2 -> Seguridad(
                     uiState = uiState
                 )
-                3 -> Ajustes()
+                3 -> Ajustes(
+                    onAbrirActualizar = { onNavegarRuta("actualizar") }
+                )
                 else -> General(
                     uiState = uiState,
                     onSeleccionarTema = { nombreTema ->

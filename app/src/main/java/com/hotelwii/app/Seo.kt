@@ -133,6 +133,20 @@ object Seo {
             mostrarTabs = true,
             mostrarMenuLateral = true,
             requiereLayout = true
+        ),
+        "actualizar" to MetaRuta(
+            orden = null,
+            key = "actualizar",
+            nombre = "Actualizar",
+            titulo = "Centro de Actualización 🚀",
+            subtitulo = "Comprobación y descarga inteligente de versiones OTA",
+            icono = WiIcons.Refresh,
+            tabs = emptyList(),
+            mostrarNavBottom = true,
+            mostrarHeader = true,
+            mostrarTabs = false,
+            mostrarMenuLateral = true,
+            requiereLayout = true
         )
     )
 

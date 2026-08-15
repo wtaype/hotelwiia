@@ -1,0 +1,8 @@
+{
+    "versionCode":  10001,
+    "versionName":  "1.0.1",
+    "apkUrl":  "https://hotelwii.amorwii.com/v1.0.1.apk",
+    "sha256":  "c80e33500b897504ab1cbdec0d5a330f44ce8b35b8f2a519f7686143fd40d8b1",
+    "releaseNotes":  "Mejoras de rendimiento en Recepción y Centro Inteligente de Actualización.",
+    "isMandatory":  false
+}

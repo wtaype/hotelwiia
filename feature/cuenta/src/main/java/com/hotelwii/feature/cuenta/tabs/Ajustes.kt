@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hotelwii.core.Wii
 import com.hotelwii.core.kicss.WiCss
 import com.hotelwii.core.kicss.WiIcons
 import com.hotelwii.core.kicss.WiText
@@ -38,7 +39,9 @@ import com.hotelwii.core.kidev.WiSwitch
  * ⚙️ Ajustes.kt — Pestaña 4 del Módulo Cuenta: Preferencias de Recepción & Almacenamiento Local wiStore.
  */
 @Composable
-fun Ajustes() {
+fun Ajustes(
+    onAbrirActualizar: () -> Unit = {}
+) {
     var notificacionesActivas by remember { mutableStateOf(true) }
     var impresorPosActivo by remember { mutableStateOf(true) }
     var mensajeCacheLimpiada by remember { mutableStateOf<String?>(null) }
@@ -147,6 +150,46 @@ fun Ajustes() {
                         mensajeCacheLimpiada = "Caché residual optimizada correctamente."
                     },
                     variant = WiButtonVariant.Error,
+                    icon = WiIcons.Refresh,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        // 3. Centro de Actualizaciones OTA
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(WiCss.wb)
+                .padding(16.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = WiIcons.CloudUpload,
+                        contentDescription = null,
+                        tint = WiCss.mco,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Actualizaciones de HotelWii",
+                        style = WiText.h4,
+                        color = WiCss.tx1,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = "Versión instalada: ${Wii.versionFile} · Canal oficial Cloudflare R2",
+                    style = WiText.small,
+                    color = WiCss.tx3
+                )
+
+                WiButton(
+                    text = "Abrir Centro de Actualizaciones",
+                    onClick = onAbrirActualizar,
                     icon = WiIcons.Refresh,
                     modifier = Modifier.fillMaxWidth()
                 )
