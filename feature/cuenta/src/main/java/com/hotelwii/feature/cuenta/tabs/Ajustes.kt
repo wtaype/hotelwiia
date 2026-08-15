@@ -40,7 +40,8 @@ import com.hotelwii.core.kidev.WiSwitch
  */
 @Composable
 fun Ajustes(
-    onAbrirActualizar: () -> Unit = {}
+    onAbrirActualizar: () -> Unit = {},
+    onAbrirImprimir: () -> Unit = {}
 ) {
     var notificacionesActivas by remember { mutableStateOf(true) }
     var impresorPosActivo by remember { mutableStateOf(true) }
@@ -52,7 +53,48 @@ fun Ajustes(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. Preferencias del Hotel
+        // 1. Centro de Impresión Térmica 3nStar
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(WiCss.wb)
+                .padding(16.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = WiIcons.Print,
+                        contentDescription = null,
+                        tint = WiCss.mco,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Impresora Térmica 3nStar",
+                        style = WiText.h4,
+                        color = WiCss.tx1,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = "Configura la IP de red, calibración, formatos de Boleta/Factura y comprobantes de recepción.",
+                    style = WiText.small,
+                    color = WiCss.tx2
+                )
+
+                WiButton(
+                    text = "Abrir Centro de Impresión",
+                    onClick = onAbrirImprimir,
+                    variant = WiButtonVariant.Primary,
+                    icon = WiIcons.Print,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        // 2. Preferencias del Hotel
         Box(
             modifier = Modifier
                 .fillMaxWidth()

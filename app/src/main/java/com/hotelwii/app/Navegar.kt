@@ -9,6 +9,7 @@ import com.hotelwii.feature.auth.AuthPantalla
 import com.hotelwii.feature.cuenta.CuentaPantalla
 import com.hotelwii.feature.empresas.EmpresaPantalla
 import com.hotelwii.feature.hola.HolaScreen
+import com.hotelwii.feature.imprimir.ImprimirPantalla
 import com.hotelwii.feature.recepcion.RecepcionPantalla
 
 /**
@@ -73,6 +74,11 @@ fun Navegar(
         }
         "actualizar" -> {
             ActualizarPantalla(
+                tabActivaIndex = tabActivaIndex
+            )
+        }
+        "imprimir" -> {
+            ImprimirPantalla(
                 tabActivaIndex = tabActivaIndex
             )
         }

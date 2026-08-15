@@ -28,7 +28,8 @@ import com.hotelwii.core.kicss.WiText
 import com.hotelwii.feature.empresas.data.CacheEmpresa
 
 /**
- * 🧩 Drawer.kt — Menú lateral desplegable ultra-delgado para HotelWii.
+ * Drawer.kt — Menú lateral desplegable dinámico para HotelWii.
+ * Consume automáticamente todas las rutas configuradas en Seo.kt (Single Source of Truth).
  */
 @Composable
 fun Drawer(
@@ -39,6 +40,7 @@ fun Drawer(
     val context = LocalContext.current
     val cacheEmpresa = remember { CacheEmpresa.getInstance(context) }
     val hotelNombre by cacheEmpresa.empresaActivaNombreFlow.collectAsState()
+
     Box(
         modifier = modifier
             .fillMaxHeight()
@@ -77,12 +79,11 @@ fun Drawer(
                     )
                 }
 
-                // Lista de rutas navegables ordenadas numéricamente
-                Rutas.RUTAS_NAV.forEach { meta ->
+                // Lista de rutas desplegables dinámicas desde Seo.kt
+                Rutas.RUTAS_DRAWER.forEach { meta ->
                     val isSelected = rutaActiva == meta.key
                     val bgColor = if (isSelected) WiCss.hv.copy(alpha = 0.15f) else WiCss.inp.copy(alpha = 0.4f)
                     val textColor = if (isSelected) WiCss.hv else WiCss.tx2
-
                     val tituloMostrar = meta.nombre ?: meta.titulo
 
                     Row(
@@ -109,38 +110,9 @@ fun Drawer(
                         )
                     }
                 }
-
-                // Enlace a Centro de Actualización
-                val isActualizar = rutaActiva == "actualizar"
-                val actBgColor = if (isActualizar) WiCss.hv.copy(alpha = 0.15f) else WiCss.inp.copy(alpha = 0.4f)
-                val actTextColor = if (isActualizar) WiCss.hv else WiCss.tx2
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(actBgColor)
-                        .clickable { onSeleccionarRuta("actualizar") }
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = com.hotelwii.core.kicss.WiIcons.Refresh,
-                        contentDescription = "Actualizar",
-                        tint = actTextColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = "Actualizar",
-                        style = WiText.body,
-                        color = actTextColor,
-                        fontWeight = if (isActualizar) FontWeight.Bold else FontWeight.Medium
-                    )
-                }
             }
 
-            // Footer Drawer
+            // Footer Drawer con versión de la app
             Column(modifier = Modifier.fillMaxWidth()) {
                 Box(
                     modifier = Modifier

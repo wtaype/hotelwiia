@@ -52,7 +52,7 @@ object Seo {
             orden = 1,
             key = "hola",
             nombre = "Hola",
-            titulo = "¡Hola HotelWii! 🏨✨",
+            titulo = "¡Hola HotelWii!",
             subtitulo = "Super App de Gestión Hotelera - Huacachina, Ica",
             icono = WiIcons.Building,
             tabs = listOf(
@@ -145,6 +145,24 @@ object Seo {
                 MetaTab("Actualizar", WiIcons.SystemUpdate),
                 MetaTab("Permisos", WiIcons.Security),
                 MetaTab("Ajustes", WiIcons.Settings)
+            ),
+            mostrarNavBottom = true,
+            mostrarHeader = true,
+            mostrarTabs = true,
+            mostrarMenuLateral = true,
+            requiereLayout = true
+        ),
+        "imprimir" to MetaRuta(
+            orden = null,
+            key = "imprimir",
+            nombre = "Impresora",
+            titulo = "Centro de Impresión Térmica",
+            subtitulo = "Control, calibración y emisión de comprobantes ESC/POS (3nStar)",
+            icono = WiIcons.Print,
+            tabs = listOf(
+                MetaTab("General", WiIcons.Print),
+                MetaTab("Modelos", WiIcons.Receipt),
+                MetaTab("Ajustes", Icons.Rounded.Settings)
             ),
             mostrarNavBottom = true,
             mostrarHeader = true,

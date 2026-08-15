@@ -34,6 +34,18 @@ import com.hotelwii.feature.recepcion.components.Fijo
 import com.hotelwii.feature.recepcion.data.ModeloHabitacion
 import com.hotelwii.feature.recepcion.data.ModeloVenta
 
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.hotelwii.core.kidev.WiSwitch
+import com.hotelwii.feature.imprimir.modelos.BoletaVenta
+import com.hotelwii.feature.imprimir.modelos.DatosBoleta
+import com.hotelwii.feature.imprimir.modelos.DatosFactura
+import com.hotelwii.feature.imprimir.modelos.FacturaVenta
+import com.hotelwii.feature.imprimir.modelos.PrecuentaTicket
+import com.hotelwii.feature.imprimir.servicios.Configurar
+import com.hotelwii.feature.imprimir.servicios.ImprimirServicio
+import kotlinx.coroutines.launch
+
 /**
  * 💳 PagoPos.kt — Flujo Fijo Dedicado para Cobro POS Instantáneo, Cálculo de Vuelto & Emisión SUNAT.
  * Botón único full-width sin botón redundante de cancelar.
@@ -45,10 +57,15 @@ fun PagoPos(
     onCerrar: () -> Unit,
     onConfirmarPagoCheckOut: (metodoPago: String, tipoComprobante: String, montoFinal: Double) -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val gestorConfig = remember { Configurar(context) }
+
     val totalOriginal = (venta?.montoTotal ?: habitacion.precio) - (venta?.montoAdelanto ?: 0.0)
     var metodoPago by remember { mutableStateOf("efectivo") }
     var tipoComprobante by remember { mutableStateOf("nota_venta") }
     var montoRecibidoStr by remember { mutableStateOf(String.format("%.2f", totalOriginal.coerceAtLeast(0.0))) }
+    var imprimirTicketAutomatico by remember { mutableStateOf(true) }
 
     val montoRecibido = montoRecibidoStr.toDoubleOrNull() ?: 0.0
     val vuelto = (montoRecibido - totalOriginal).coerceAtLeast(0.0)
@@ -143,13 +160,61 @@ fun PagoPos(
             label = "Emisión de Comprobante"
         )
 
+        WiSwitch(
+            checked = imprimirTicketAutomatico,
+            onCheckedChange = { imprimirTicketAutomatico = it },
+            label = "Imprimir Ticket Térmico (3nStar)",
+            sublabel = "Emite el comprobante en la impresora de recepción inmediatamente."
+        )
+
         Spacer(Modifier.height(4.dp))
 
         // Botón Único Full-Width
         WiButton(
             text = "Cobrar y Finalizar Check-Out",
             onClick = {
-                onConfirmarPagoCheckOut(metodoPago, tipoComprobante, totalOriginal.coerceAtLeast(0.0))
+                val montoCobrado = totalOriginal.coerceAtLeast(0.0)
+
+                if (imprimirTicketAutomatico) {
+                    scope.launch {
+                        val config = gestorConfig.obtener()
+                        val bytes = when (tipoComprobante) {
+                            "factura" -> FacturaVenta.generar(
+                                datos = DatosFactura(
+                                    habitacionNumero = habitacion.numero,
+                                    tipoHabitacion = habitacion.tipo,
+                                    total = montoCobrado,
+                                    subtotal = montoCobrado / 1.18,
+                                    igv = montoCobrado - (montoCobrado / 1.18),
+                                    metodoPago = metodoPago
+                                ),
+                                anchoPapel = config.anchoPapel
+                            )
+                            "boleta" -> BoletaVenta.generar(
+                                datos = DatosBoleta(
+                                    habitacionNumero = habitacion.numero,
+                                    tipoHabitacion = habitacion.tipo,
+                                    total = montoCobrado,
+                                    subtotal = montoCobrado / 1.18,
+                                    igv = montoCobrado - (montoCobrado / 1.18),
+                                    metodoPago = metodoPago,
+                                    montoRecibido = montoRecibido,
+                                    vuelto = vuelto
+                                ),
+                                anchoPapel = config.anchoPapel
+                            )
+                            else -> PrecuentaTicket.generar(
+                                habitacionNumero = habitacion.numero,
+                                montoHospedaje = habitacion.precio,
+                                totalNeto = montoCobrado,
+                                anchoPapel = config.anchoPapel
+                            )
+                        }
+                        ImprimirServicio.enviar(bytes, config)
+                    }
+                }
+
+                onConfirmarPagoCheckOut(metodoPago, tipoComprobante, montoCobrado)
             },
             variant = WiButtonVariant.Primary,
             icon = Icons.Rounded.Check,

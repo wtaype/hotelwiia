@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":feature:auth"))
     implementation(project(":feature:empresas"))
+    implementation(project(":feature:imprimir"))
 
     implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest)

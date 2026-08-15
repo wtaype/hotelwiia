@@ -70,6 +70,7 @@ dependencies {
     implementation(project(":feature:empresas"))
     implementation(project(":feature:recepcion"))
     implementation(project(":feature:actualizar"))
+    implementation(project(":feature:imprimir"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

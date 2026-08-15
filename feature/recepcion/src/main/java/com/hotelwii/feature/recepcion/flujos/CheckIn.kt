@@ -54,6 +54,11 @@ import com.hotelwii.core.kidev.WiButtonVariant
 import com.hotelwii.core.kidev.WiComprimir
 import com.hotelwii.core.kidev.WiField
 import com.hotelwii.core.kidev.WiSelect
+import com.hotelwii.core.kidev.WiSwitch
+import com.hotelwii.feature.imprimir.modelos.DatosCheckInTicket
+import com.hotelwii.feature.imprimir.modelos.TicketCheckIn
+import com.hotelwii.feature.imprimir.servicios.Configurar
+import com.hotelwii.feature.imprimir.servicios.ImprimirServicio
 import com.hotelwii.feature.recepcion.components.Fijo
 import com.hotelwii.feature.recepcion.data.ModeloHabitacion
 import com.hotelwii.feature.recepcion.data.ModeloVenta
@@ -75,12 +80,14 @@ fun CheckIn(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val geminiService = remember { GeminiService(context) }
+    val gestorConfig = remember { Configurar(context) }
 
     // Estados de Formulario Huésped
     var tipoDoc by remember { mutableStateOf("dni") }
     var numDoc by remember { mutableStateOf("") }
     var clienteNombre by remember { mutableStateOf("") }
     var celular by remember { mutableStateOf("") }
+    var imprimirVoucherCheckIn by remember { mutableStateOf(true) }
     var nacionalidad by remember { mutableStateOf("Perú") }
     var fechaNacimiento by remember { mutableStateOf("") }
     var cantidadStr by remember { mutableStateOf("1") }
@@ -599,6 +606,15 @@ fun CheckIn(
         // Espacio para scroll cómodo sobre el teclado virtual
         Spacer(Modifier.height(8.dp))
 
+        WiSwitch(
+            checked = imprimirVoucherCheckIn,
+            onCheckedChange = { imprimirVoucherCheckIn = it },
+            label = "Imprimir Voucher de Huésped (3nStar)",
+            sublabel = "Emite el comprobante de check-in con datos de Wi-Fi para el huésped."
+        )
+
+        Spacer(Modifier.height(8.dp))
+
         // =========================================================================
         // 🚀 BOTÓN PRINCIPAL DE CONFIRMACIÓN A ANCHO COMPLETO (100%)
         // =========================================================================
@@ -624,6 +640,29 @@ fun CheckIn(
                     tipoComprobante = tipoComprobantePref,
                     observaciones = notas.trim()
                 )
+
+                if (imprimirVoucherCheckIn) {
+                    scope.launch {
+                        val config = gestorConfig.obtener()
+                        val bytes = TicketCheckIn.generar(
+                            datos = DatosCheckInTicket(
+                                habitacionNumero = habitacion.numero,
+                                tipoHabitacion = habitacion.tipo,
+                                huespedNombre = v.clienteNombre,
+                                huespedDni = v.numDoc,
+                                numPersonas = v.cantidad,
+                                fechaIngreso = v.fechaIngreso,
+                                fechaSalidaEstimada = v.fechaSalida ?: "",
+                                montoAdelanto = v.montoAdelanto,
+                                montoPendiente = (v.montoTotal - v.montoAdelanto).coerceAtLeast(0.0),
+                                notasRecepcion = v.observaciones ?: ""
+                            ),
+                            anchoPapel = config.anchoPapel
+                        )
+                        ImprimirServicio.enviar(bytes, config)
+                    }
+                }
+
                 onConfirmarCheckIn(v)
             },
             variant = WiButtonVariant.Primary,

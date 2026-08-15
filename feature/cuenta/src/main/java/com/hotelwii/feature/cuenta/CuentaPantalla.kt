@@ -64,7 +64,8 @@ fun CuentaPantalla(
                     uiState = uiState
                 )
                 3 -> Ajustes(
-                    onAbrirActualizar = { onNavegarRuta("actualizar") }
+                    onAbrirActualizar = { onNavegarRuta("actualizar") },
+                    onAbrirImprimir = { onNavegarRuta("imprimir") }
                 )
                 else -> General(
                     uiState = uiState,

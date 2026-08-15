@@ -55,6 +55,11 @@ object Rutas {
         .filter { it.orden != null }
         .sortedBy { it.orden }
 
+    /** Lista de rutas que se muestran en el Drawer según Seo.kt */
+    val RUTAS_DRAWER: List<MetaRuta> = Seo.METADATOS.values
+        .filter { it.mostrarMenuLateral }
+        .sortedBy { it.orden ?: 99 }
+
     /** Obtiene los metadatos de una ruta o retorna el valor por defecto */
     fun getMeta(key: String): MetaRuta = Seo.METADATOS[key] ?: Seo.DEFAULT
 }
