@@ -17,12 +17,12 @@ object Wii {
     const val packageName = "com.hotelwii.app"
 
     // 🚀 CONTROL CENTRAL DE VERSIONES HOTELWII (SEMVER ENTERPRISE)
-    const val versionCode = 10001             // SemVer Ponderado: 1*10000 + 0*100 + 1
-    const val versionName = "1.0.1"           // Versión semántica legible
-    const val versionFile = "v$versionName"   // ⚡ Automático: Nombre de APKs y carpetas (v1.0.1)
-    const val versionNotas = "Mejoras de rendimiento en Recepción y Centro Inteligente de Actualización."
+    const val versionCode = 20100             // SemVer Ponderado: 2*10000 + 1*100 + 0
+    const val versionName = "2.1.0"           // Versión semántica legible
+    const val versionFile = "v$versionName"   // ⚡ Automático: Nombre de APKs y carpetas (v2.1.0)
+    const val versionNotas = "Lanzamiento oficial v2.1.0: Nuevo Centro Inteligente de Actualización OTA, mejoras de rendimiento y recepción ultra veloz."
     const val isMandatory = false             // Actualización obligatoria sí/no
-    const val version = "v1"                  // Tag simplificado para Git / GitHub (ej. v1, v2)
+    const val version = "v2"                  // Tag simplificado para Git / GitHub (ej. v1, v2)
     const val dtema = "paz"
 
     /**

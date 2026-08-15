@@ -1,8 +1,8 @@
 {
-    "versionCode":  10001,
-    "versionName":  "1.0.1",
-    "apkUrl":  "https://hotelwii.amorwii.com/v1.0.1.apk",
-    "sha256":  "c80e33500b897504ab1cbdec0d5a330f44ce8b35b8f2a519f7686143fd40d8b1",
-    "releaseNotes":  "Mejoras de rendimiento en Recepción y Centro Inteligente de Actualización.",
+    "versionCode":  20100,
+    "versionName":  "2.1.0",
+    "apkUrl":  "https://hotelwii.amorwii.com/v2.1.0.apk",
+    "sha256":  "50ffe50dfb48bb51a8cff84335b2a1cbbbb24a0210e2d33da12717b8eac4010a",
+    "releaseNotes":  "Lanzamiento oficial v2.1.0: Nuevo Centro Inteligente de Actualización OTA, mejoras de rendimiento y recepción ultra veloz.",
     "isMandatory":  false
 }
