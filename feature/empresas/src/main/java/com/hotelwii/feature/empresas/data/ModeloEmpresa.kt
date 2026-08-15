@@ -36,6 +36,12 @@ data class ModeloEmpresa(
     val moneda: String = "PEN",
     @SerialName("pin_sol") val pinSol: String? = null,
 
+    // 🖨️ Configuración de Impresora Térmica (3nStar)
+    @SerialName("impresora_ip") val impresoraIp: String? = "192.168.0.110",
+    @SerialName("impresora_puerto") val impresoraPuerto: Int? = 9100,
+    @SerialName("impresora_papel") val impresoraPapel: String? = "80mm",
+    @SerialName("impresora_corte") val impresoraCorte: Boolean? = true,
+
     // ⚙️ Estado y Selección Local-First
     val principal: Boolean = false,
     val activo: Boolean = true,
