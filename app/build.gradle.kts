@@ -71,6 +71,7 @@ dependencies {
     implementation(project(":feature:recepcion"))
     implementation(project(":feature:actualizar"))
     implementation(project(":feature:imprimir"))
+    implementation(project(":feature:personal"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

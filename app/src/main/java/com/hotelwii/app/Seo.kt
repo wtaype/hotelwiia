@@ -134,6 +134,24 @@ object Seo {
             mostrarMenuLateral = true,
             requiereLayout = true
         ),
+        "personal" to MetaRuta(
+            orden = 4,
+            key = "personal",
+            nombre = "Personal",
+            titulo = "Equipo de Personal",
+            subtitulo = "Control de colaboradores, roles y permisos de recepción",
+            icono = WiIcons.Person,
+            tabs = listOf(
+                MetaTab("Equipo", WiIcons.Person),
+                MetaTab("Nuevo", WiIcons.Check),
+                MetaTab("Ajustes", Icons.Rounded.Settings)
+            ),
+            mostrarNavBottom = true,
+            mostrarHeader = true,
+            mostrarTabs = true,
+            mostrarMenuLateral = true,
+            requiereLayout = true
+        ),
         "actualizar" to MetaRuta(
             orden = null,
             key = "actualizar",

@@ -10,6 +10,7 @@ import com.hotelwii.feature.cuenta.CuentaPantalla
 import com.hotelwii.feature.empresas.EmpresaPantalla
 import com.hotelwii.feature.hola.HolaScreen
 import com.hotelwii.feature.imprimir.ImprimirPantalla
+import com.hotelwii.feature.personal.PersonalPantalla
 import com.hotelwii.feature.recepcion.RecepcionPantalla
 
 /**
@@ -66,6 +67,14 @@ fun Navegar(
         }
         "empresas" -> {
             EmpresaPantalla(
+                tabActivaIndex = tabActivaIndex,
+                onSeleccionarTab = { index ->
+                    rutasState.seleccionarTab(index)
+                }
+            )
+        }
+        "personal" -> {
+            PersonalPantalla(
                 tabActivaIndex = tabActivaIndex,
                 onSeleccionarTab = { index ->
                     rutasState.seleccionarTab(index)

@@ -14,7 +14,11 @@ import kotlinx.serialization.json.Json
 
 /**
  * 🔒 CacheSeguridad.kt — Gestor de Caché Local-First para la Bóveda de Seguridad.
- * Persiste las credenciales y el PIN cifrados con AES-256 en wiStore usando la llave "wiSeguridad".
+ * Persiste las credenciales y el PIN cifrados con AES-256 en wiStore usando las llaves:
+ * - "wiSeguridad"        -> Objeto completo cifrado (SeguridadModelo)
+ * - "wiSeguridad_gemini" -> API Key individual de Google Gemini Vision OCR
+ * - "wiSesion"           -> Estado de sesión
+ *
  * Ofrece lectura inmediata en memoria RAM (0 ms) mediante StateFlow reactivo.
  */
 class CacheSeguridad private constructor(context: Context) {
@@ -26,12 +30,16 @@ class CacheSeguridad private constructor(context: Context) {
 
     /**
      * Guarda el modelo de seguridad completo con cifrado AES-256 en wiStore y actualiza RAM.
+     * Sincroniza automáticamente la clave específica "wiSeguridad_gemini".
      */
     fun guardarSeguridad(modelo: SeguridadModelo) {
         _seguridadFlow.value = modelo
         try {
             val rawJson = json.encodeToString(modelo)
             store.saveSecure(KEY_SEGURIDAD, rawJson)
+            if (modelo.geminiKey.isNotBlank()) {
+                store.saveSecure(KEY_GEMINI, modelo.geminiKey.trim())
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -48,6 +56,30 @@ class CacheSeguridad private constructor(context: Context) {
         } catch (e: Exception) {
             null
         }
+    }
+
+    /**
+     * 🤖 Guarda la clave de Gemini en la llave estandarizada "wiSeguridad_gemini".
+     */
+    fun guardarGeminiKey(key: String) {
+        store.saveSecure(KEY_GEMINI, key.trim())
+        val actual = _seguridadFlow.value ?: SeguridadModelo()
+        guardarSeguridad(actual.copy(geminiKey = key.trim()))
+    }
+
+    /**
+     * 🤖 Obtiene la clave de Gemini desde "wiSeguridad_gemini" o del modelo "wiSeguridad".
+     */
+    fun obtenerGeminiKey(): String {
+        val directa = store.getSecure(KEY_GEMINI, "").trim()
+        if (directa.isNotBlank()) return directa
+
+        val delModelo = _seguridadFlow.value?.geminiKey ?: obtenerSeguridad()?.geminiKey ?: ""
+        if (delModelo.isNotBlank()) {
+            store.saveSecure(KEY_GEMINI, delModelo.trim())
+            return delModelo.trim()
+        }
+        return ""
     }
 
     /**
@@ -96,11 +128,13 @@ class CacheSeguridad private constructor(context: Context) {
         _seguridadFlow.value = null
         store.save(KEY_SEGURIDAD, "")
         store.save(KEY_SESION, "")
+        store.save(KEY_GEMINI, "")
     }
 
     companion object {
-        private const val KEY_SEGURIDAD = "wiSeguridad"
-        private const val KEY_SESION = "wiSesion"
+        const val KEY_SEGURIDAD = "wiSeguridad"
+        const val KEY_GEMINI = "wiSeguridad_gemini"
+        const val KEY_SESION = "wiSesion"
 
         @Volatile
         private var instance: CacheSeguridad? = null

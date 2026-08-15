@@ -7,6 +7,7 @@ import com.hotelwii.core.kidev.Encriptar
 import com.hotelwii.core.kidev.getSecure
 import com.hotelwii.core.kidev.saveSecure
 import com.hotelwii.core.kidev.wiStore
+import com.hotelwii.feature.cuenta.data.CacheSeguridad
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -32,14 +33,27 @@ class GeminiService(private val context: Context) {
     private val store = wiStore(context)
 
     /**
-     * Obtiene la clave de API desencriptada desde WiStore
+     * Obtiene la clave de API desencriptada desde CacheSeguridad (wiSeguridad_gemini / wiSeguridad) o WiStore
      */
     fun obtenerApiKeyDesencriptada(): String? {
+        // 1. Lectura prioritaria desde CacheSeguridad (wiSeguridad_gemini)
+        try {
+            val keyDesdeCache = CacheSeguridad.getInstance(context).obtenerGeminiKey().trim()
+            if (keyDesdeCache.isNotBlank()) return keyDesdeCache
+        } catch (_: Exception) {}
+
+        // 2. Lectura directa desde WiStore
+        val keyWiSeguridad = store.getSecure("wiSeguridad_gemini", "").trim()
+        if (keyWiSeguridad.isNotBlank()) return keyWiSeguridad
+
         val keySeguridad = store.getSecure("mi_gemini_key", "").trim()
         if (keySeguridad.isNotBlank()) return keySeguridad
 
         val keyAlternativa = store.getSecure("MI_GEMINI_API", "").trim()
         if (keyAlternativa.isNotBlank()) return keyAlternativa
+
+        val rawStore = store.get("mi_gemini_key")?.trim()
+        if (!rawStore.isNullOrBlank()) return rawStore
 
         val prefsLegacy = context.getSharedPreferences("wii_seguridad_prefs", Context.MODE_PRIVATE)
         val legacyVal = prefsLegacy.getString("MI_GEMINI_API", null)?.trim()
@@ -51,11 +65,16 @@ class GeminiService(private val context: Context) {
     }
 
     /**
-     * Guarda una nueva clave cifrándola automáticamente en WiStore
+     * Guarda una nueva clave cifrándola automáticamente en WiStore y CacheSeguridad
      */
     fun guardarApiKeyCifrada(apiKeyLimpia: String) {
-        store.saveSecure("mi_gemini_key", apiKeyLimpia.trim())
-        store.saveSecure("MI_GEMINI_API", apiKeyLimpia.trim())
+        val limpia = apiKeyLimpia.trim()
+        try {
+            CacheSeguridad.getInstance(context).guardarGeminiKey(limpia)
+        } catch (_: Exception) {}
+        store.saveSecure("wiSeguridad_gemini", limpia)
+        store.saveSecure("mi_gemini_key", limpia)
+        store.saveSecure("MI_GEMINI_API", limpia)
     }
 
     /**
@@ -119,14 +138,13 @@ class GeminiService(private val context: Context) {
                 put("contents", contentsArray)
             }
 
-            // 3. Cascada de modelos de pancitawii (gemini-3.1-flash-lite, gemini-3.1-flash, gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash)
+            // 3. Cascada de modelos oficiales de Google AI
             val modelosDisponibles = listOf(
-                "gemini-3.1-flash-lite",
-                "gemini-3.1-flash",
                 "gemini-2.5-flash",
                 "gemini-2.0-flash",
                 "gemini-1.5-flash",
-                "gemini-2.0-flash-exp"
+                "gemini-2.0-flash-lite",
+                "gemini-1.5-pro"
             )
             var ultimoError = ""
 

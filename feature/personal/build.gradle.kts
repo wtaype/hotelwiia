@@ -4,16 +4,14 @@ plugins {
 }
 
 android {
-    namespace = "com.hotelwii.feature.recepcion"
+    namespace = "com.hotelwii.feature.personal"
 }
 
 dependencies {
     implementation(project(":core:wii"))
     implementation(project(":core:data"))
     implementation(project(":feature:auth"))
-    implementation(project(":feature:cuenta"))
     implementation(project(":feature:empresas"))
-    implementation(project(":feature:imprimir"))
 
     implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest)
