@@ -3,9 +3,10 @@ package com.hotelwii.feature.recepcion
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.hotelwii.feature.auth.data.CacheSmile
 import com.hotelwii.feature.empresas.data.CacheEmpresa
 import com.hotelwii.feature.recepcion.api.RecepcionApi
-import com.hotelwii.feature.recepcion.data.CacheHabitaciones
+import com.hotelwii.feature.recepcion.data.CacheHabitacion
 import com.hotelwii.feature.recepcion.data.CacheVentas
 import com.hotelwii.feature.recepcion.data.ModeloHabitacion
 import com.hotelwii.feature.recepcion.data.ModeloReserva
@@ -36,9 +37,10 @@ data class RecepcionUiState(
  * 🧠 RecepcionViewModel.kt — Gestor de estado para el Centro de Control del Recepcionista (LocalFirst < 1ms).
  */
 class RecepcionViewModel(application: Application) : AndroidViewModel(application) {
-    private val cacheHabitaciones = CacheHabitaciones.getInstance(application)
+    private val cacheHabitacion = CacheHabitacion.getInstance(application)
     private val cacheVentas = CacheVentas.getInstance(application)
     private val cacheEmpresa = CacheEmpresa.getInstance(application)
+    private val cacheSmile = CacheSmile.getInstance(application)
     private val api = RecepcionApi
 
     private val _uiState = MutableStateFlow(RecepcionUiState())
@@ -47,18 +49,21 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
     private val empresaId: String
         get() = cacheEmpresa.empresaActivaFlow.value?.id ?: ""
 
+    private val smileId: String
+        get() = cacheSmile.sesionActivaFlow.value?.id ?: ""
+
     init {
         cargarDatosLocalFirst()
     }
 
     fun cargarDatosLocalFirst(isRefreshManual: Boolean = false) {
         val empId = empresaId
-        val habsCache = cacheHabitaciones.obtenerListaHabitaciones(empId)
+        val habsCache = cacheHabitacion.obtenerListaHabitaciones(empId)
         val ventasCache = cacheVentas.obtenerVentasActivas(empId)
 
         _uiState.update { state ->
             state.copy(
-                habitaciones = if (habsCache.isEmpty()) demoHabitaciones() else habsCache,
+                habitaciones = habsCache,
                 ventasActivas = ventasCache,
                 isRefreshing = isRefreshManual
             )
@@ -69,10 +74,8 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
             viewModelScope.launch {
                 val resHabs = api.obtenerHabitaciones(empId)
                 resHabs.onSuccess { listaRemota ->
-                    if (listaRemota.isNotEmpty()) {
-                        cacheHabitaciones.guardarListaHabitaciones(empId, listaRemota)
-                        _uiState.update { it.copy(habitaciones = listaRemota, isRefreshing = false) }
-                    }
+                    cacheHabitacion.guardarListaHabitaciones(empId, listaRemota)
+                    _uiState.update { it.copy(habitaciones = listaRemota, isRefreshing = false) }
                 }
 
                 val resVentas = api.obtenerVentasActivas(empId)
@@ -125,7 +128,7 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
                     }
                     cargarDatosLocalFirst()
                 },
-                onFailure = { err ->
+                onFailure = {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -186,7 +189,11 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun guardarHabitacion(hab: ModeloHabitacion) {
         val empId = empresaId
-        val dto = hab.copy(empresaId = empId)
+        val sId = smileId
+        val dto = hab.copy(
+            empresaId = empId,
+            smileId = if (hab.smileId.isNotBlank()) hab.smileId else sId
+        )
 
         // 1. Mutación instantánea LocalFirst (< 1ms)
         val listaActual = _uiState.value.habitaciones.toMutableList()
@@ -205,13 +212,13 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
             )
         }
 
-        cacheHabitaciones.guardarListaHabitaciones(empId, listaActual)
+        cacheHabitacion.guardarListaHabitaciones(empId, listaActual)
 
         // 2. Sincronización en segundo plano con Supabase
         viewModelScope.launch {
             val res = api.guardarHabitacion(dto)
             res.fold(
-                onSuccess = { h ->
+                onSuccess = {
                     cargarDatosLocalFirst()
                 },
                 onFailure = {
@@ -237,7 +244,7 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
                 mensajeExito = "¡Precio actualizado a S/ ${String.format("%.2f", nuevoPrecio)} para Hab. ${habModificada.numero}!"
             )
         }
-        cacheHabitaciones.guardarListaHabitaciones(empId, listaActual)
+        cacheHabitacion.guardarListaHabitaciones(empId, listaActual)
 
         // 2. Sync en 2do plano con Supabase
         viewModelScope.launch {
@@ -256,7 +263,7 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
                 mensajeExito = "Habitación eliminada de la lista."
             )
         }
-        cacheHabitaciones.guardarListaHabitaciones(empId, listaActual)
+        cacheHabitacion.guardarListaHabitaciones(empId, listaActual)
 
         // 2. Sync Supabase delete
         viewModelScope.launch {
@@ -296,13 +303,4 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
     fun limpiarMensajes() {
         _uiState.update { it.copy(error = null, mensajeExito = null) }
     }
-
-    private fun demoHabitaciones() = listOf(
-        ModeloHabitacion(id = "1", numero = "101", piso = "Piso 1", tipo = "Simple", precio = 60.0, estado = "disponible", conBano = true, conDesayuno = false),
-        ModeloHabitacion(id = "2", numero = "102", piso = "Piso 1", tipo = "Matrimonial", precio = 90.0, estado = "ocupada", conBano = true, conDesayuno = true),
-        ModeloHabitacion(id = "3", numero = "201", piso = "Piso 2", tipo = "Suite Jacuzzi", precio = 150.0, estado = "disponible", conBano = true, conDesayuno = true),
-        ModeloHabitacion(id = "4", numero = "202", piso = "Piso 2", tipo = "Doble", precio = 110.0, estado = "limpieza", conBano = true, conDesayuno = false),
-        ModeloHabitacion(id = "5", numero = "103", piso = "Piso 1", tipo = "Ejecutiva King", precio = 120.0, estado = "disponible", conBano = true, conTv = true, conDesayuno = true, capacidad = 2),
-        ModeloHabitacion(id = "6", numero = "104", piso = "Piso 1", tipo = "Suite Presidencial", precio = 180.0, estado = "disponible", conBano = true, conTv = true, conDesayuno = true, amenidades = "Jacuzzi, Wi-Fi 6, Smart TV 65, Frigobar", capacidad = 2)
-    )
 }
