@@ -87,7 +87,7 @@ fun General(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Tarjeta de Estado en Vivo
+                // Tarjeta de Estado en Vivo y Pruebas
                 Estados(
                     config = config,
                     isProbando = isProbando,
@@ -107,79 +107,6 @@ fun General(
                     },
                     onEditarConfiguracion = { modoEdicion = true }
                 )
-
-                // Accesos Rápidos de Emisión
-                Text(
-                    text = "Emisión Rápida de Comprobantes:",
-                    style = WiText.label,
-                    color = WiCss.tx2,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    WiButton(
-                        text = "Boleta B001",
-                        onClick = {
-                            val bytes = BoletaVenta.generar(
-                                datos = DatosBoleta(),
-                                anchoPapel = config.anchoPapel
-                            )
-                            onImprimirBytes(bytes, "Boleta B001")
-                        },
-                        variant = WiButtonVariant.Secondary,
-                        icon = WiIcons.Receipt,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    WiButton(
-                        text = "Factura F001",
-                        onClick = {
-                            val bytes = FacturaVenta.generar(
-                                datos = DatosFactura(),
-                                anchoPapel = config.anchoPapel
-                            )
-                            onImprimirBytes(bytes, "Factura F001")
-                        },
-                        variant = WiButtonVariant.Secondary,
-                        icon = WiIcons.Receipt,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    WiButton(
-                        text = "Voucher Check-In",
-                        onClick = {
-                            val bytes = TicketCheckIn.generar(
-                                datos = DatosCheckInTicket(),
-                                anchoPapel = config.anchoPapel
-                            )
-                            onImprimirBytes(bytes, "Voucher Check-In")
-                        },
-                        variant = WiButtonVariant.Secondary,
-                        icon = WiIcons.Building,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    WiButton(
-                        text = "Arqueo de Turno",
-                        onClick = {
-                            val bytes = ArqueoCajaTicket.generar(
-                                anchoPapel = config.anchoPapel
-                            )
-                            onImprimirBytes(bytes, "Arqueo de Turno")
-                        },
-                        variant = WiButtonVariant.Secondary,
-                        icon = WiIcons.PointOfSale,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
             }
         }
     }

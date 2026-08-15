@@ -25,7 +25,7 @@ enum class TipoConexion {
  */
 data class ModeloConfigImpresora(
     val tipoConexion: TipoConexion = TipoConexion.RED_TCP,
-    val ip: String = "192.168.1.100",
+    val ip: String = "192.168.0.110",
     val puerto: Int = 9100,
     val nombreBluetooth: String = "3nStar POS Printer",
     val macBluetooth: String = "",
@@ -37,7 +37,7 @@ data class ModeloConfigImpresora(
 )
 
 /**
- * 💾 Configurar.kt — Gestor de persistencia de configuración de impresora en HotelWii.
+ * Configurar.kt — Gestor de persistencia de configuración de impresora en HotelWii.
  */
 class Configurar(context: Context) {
     private val store = WiStore(context)
@@ -62,13 +62,19 @@ class Configurar(context: Context) {
     fun obtener(): ModeloConfigImpresora {
         val jsonStr = store.get(KEY_CONFIG, "")
         if (jsonStr.isEmpty()) {
-            return ModeloConfigImpresora(estaConfigurada = false)
+            val inicial = ModeloConfigImpresora(ip = "192.168.0.110", estaConfigurada = true)
+            guardar(inicial)
+            return inicial
         }
         return try {
             val json = JSONObject(jsonStr)
-            ModeloConfigImpresora(
+            var ipGuardada = json.optString("ip", "192.168.0.110")
+            if (ipGuardada == "192.168.1.100" || ipGuardada.isBlank()) {
+                ipGuardada = "192.168.0.110"
+            }
+            val config = ModeloConfigImpresora(
                 tipoConexion = TipoConexion.valueOf(json.optString("tipoConexion", TipoConexion.RED_TCP.name)),
-                ip = json.optString("ip", "192.168.1.100"),
+                ip = ipGuardada,
                 puerto = json.optInt("puerto", 9100),
                 nombreBluetooth = json.optString("nombreBluetooth", "3nStar POS Printer"),
                 macBluetooth = json.optString("macBluetooth", ""),
@@ -76,10 +82,16 @@ class Configurar(context: Context) {
                 cortarPapel = json.optBoolean("cortarPapel", true),
                 abrirCajon = json.optBoolean("abrirCajon", false),
                 numCopias = json.optInt("numCopias", 1),
-                estaConfigurada = json.optBoolean("estaConfigurada", true)
+                estaConfigurada = true
             )
+            if (ipGuardada == "192.168.0.110" && json.optString("ip") != "192.168.0.110") {
+                guardar(config)
+            }
+            config
         } catch (e: Exception) {
-            ModeloConfigImpresora(estaConfigurada = false)
+            val inicial = ModeloConfigImpresora(ip = "192.168.0.110", estaConfigurada = true)
+            guardar(inicial)
+            inicial
         }
     }
 }

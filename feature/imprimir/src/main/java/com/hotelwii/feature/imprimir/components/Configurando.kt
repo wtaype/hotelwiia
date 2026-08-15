@@ -313,7 +313,7 @@ fun Configurando(
                     val p = puertoStr.toIntOrNull() ?: 9100
                     val nuevaConfig = configActual.copy(
                         tipoConexion = tipoConexion,
-                        ip = ip.ifBlank { "192.168.1.100" },
+                        ip = ip.ifBlank { "192.168.0.110" },
                         puerto = p,
                         macBluetooth = macBluetooth,
                         anchoPapel = anchoPapel,
