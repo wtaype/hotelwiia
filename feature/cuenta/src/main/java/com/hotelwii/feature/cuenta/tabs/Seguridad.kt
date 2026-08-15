@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,11 +45,10 @@ import com.hotelwii.core.kidev.GoldPill
 import com.hotelwii.core.kidev.WiButton
 import com.hotelwii.core.kidev.WiButtonVariant
 import com.hotelwii.core.kidev.WiPassword
-import com.hotelwii.core.kidev.getSecure
-import com.hotelwii.core.kidev.saveSecure
-import com.hotelwii.core.kidev.wiStore
 import com.hotelwii.feature.cuenta.CuentaUiState
 import com.hotelwii.feature.cuenta.api.CuentaApi
+import com.hotelwii.feature.cuenta.api.SeguridadModelo
+import com.hotelwii.feature.cuenta.data.CacheSeguridad
 import kotlinx.coroutines.launch
 
 /**
@@ -59,16 +59,16 @@ fun Seguridad(
     uiState: CuentaUiState
 ) {
     val context = LocalContext.current
-    val store = remember { wiStore(context) }
+    val cacheSeguridad = remember { CacheSeguridad.getInstance(context) }
     val scope = rememberCoroutineScope()
     val cuentaApi = remember { CuentaApi() }
 
     val smileId = uiState.smile?.id ?: ""
+    val seguridadLocal by cacheSeguridad.seguridadFlow.collectAsState()
 
     // PIN de Seguridad de 4 dígitos
-    var pinGuardado by remember { mutableStateOf(store.get("pin_seguridad_boveda", "")) }
     var pinIngresado by remember { mutableStateOf("") }
-    var isDesbloqueado by remember { mutableStateOf(pinGuardado.isEmpty()) }
+    var isDesbloqueado by remember { mutableStateOf(!cacheSeguridad.tienePinConfigurado()) }
     var mensajePinError by remember { mutableStateOf<String?>(null) }
     var mensajePinExito by remember { mutableStateOf<String?>(null) }
 
@@ -77,12 +77,22 @@ fun Seguridad(
     var passReautenticacion by remember { mutableStateOf("") }
     var mensajeErrorRecuperacion by remember { mutableStateOf<String?>(null) }
 
-    // Campos de Llaves API (Guardadas encriptadas con Encriptar + wiStore)
-    var tokenDecolecta by remember { mutableStateOf(store.getSecure("mi_api_decolecta", "")) }
-    var r2AccessKey by remember { mutableStateOf(store.getSecure("mi_r2_cloudfire_key", "")) }
-    var r2SecretKey by remember { mutableStateOf(store.getSecure("mi_r2_cloudfire_secret", "")) }
-    var geminiKey by remember { mutableStateOf(store.getSecure("mi_gemini_key", "")) }
+    // Campos de Llaves API (Obtenidas de CacheSeguridad con cifrado AES-256)
+    var tokenDecolecta by remember { mutableStateOf(seguridadLocal?.apiDecolecta ?: "") }
+    var r2AccessKey by remember { mutableStateOf(seguridadLocal?.r2AccessKey ?: "") }
+    var r2SecretKey by remember { mutableStateOf(seguridadLocal?.r2SecretKey ?: "") }
+    var geminiKey by remember { mutableStateOf(seguridadLocal?.geminiKey ?: "") }
     var mensajeGuardadoBoveda by remember { mutableStateOf("") }
+
+    // Actualizar campos locales cuando cambie la caché reactiva
+    LaunchedEffect(seguridadLocal) {
+        seguridadLocal?.let { seg ->
+            if (tokenDecolecta.isBlank() && seg.apiDecolecta.isNotBlank()) tokenDecolecta = seg.apiDecolecta
+            if (r2AccessKey.isBlank() && seg.r2AccessKey.isNotBlank()) r2AccessKey = seg.r2AccessKey
+            if (r2SecretKey.isBlank() && seg.r2SecretKey.isNotBlank()) r2SecretKey = seg.r2SecretKey
+            if (geminiKey.isBlank() && seg.geminiKey.isNotBlank()) geminiKey = seg.geminiKey
+        }
+    }
 
     // Cambiar Contraseña del Usuario
     var passNueva by remember { mutableStateOf("") }
@@ -98,22 +108,18 @@ fun Seguridad(
         if (smileId.isNotBlank() && (tokenDecolecta.isBlank() || geminiKey.isBlank())) {
             cuentaApi.obtenerSeguridad(smileId).onSuccess { modeloRemoto ->
                 if (modeloRemoto != null) {
-                    if (modeloRemoto.apiDecolecta.isNotBlank()) {
-                        tokenDecolecta = modeloRemoto.apiDecolecta
-                        store.saveSecure("mi_api_decolecta", modeloRemoto.apiDecolecta)
-                    }
-                    if (modeloRemoto.r2AccessKey.isNotBlank()) {
-                        r2AccessKey = modeloRemoto.r2AccessKey
-                        store.saveSecure("mi_r2_cloudfire_key", modeloRemoto.r2AccessKey)
-                    }
-                    if (modeloRemoto.r2SecretKey.isNotBlank()) {
-                        r2SecretKey = modeloRemoto.r2SecretKey
-                        store.saveSecure("mi_r2_cloudfire_secret", modeloRemoto.r2SecretKey)
-                    }
-                    if (modeloRemoto.geminiKey.isNotBlank()) {
-                        geminiKey = modeloRemoto.geminiKey
-                        store.saveSecure("mi_gemini_key", modeloRemoto.geminiKey)
-                    }
+                    val combinado = (seguridadLocal ?: SeguridadModelo(userId = smileId)).copy(
+                        userId = smileId,
+                        apiDecolecta = modeloRemoto.apiDecolecta.ifBlank { tokenDecolecta },
+                        r2AccessKey = modeloRemoto.r2AccessKey.ifBlank { r2AccessKey },
+                        r2SecretKey = modeloRemoto.r2SecretKey.ifBlank { r2SecretKey },
+                        geminiKey = modeloRemoto.geminiKey.ifBlank { geminiKey }
+                    )
+                    cacheSeguridad.guardarSeguridad(combinado)
+                    tokenDecolecta = combinado.apiDecolecta
+                    r2AccessKey = combinado.r2AccessKey
+                    r2SecretKey = combinado.r2SecretKey
+                    geminiKey = combinado.geminiKey
                 }
             }
         }
@@ -151,7 +157,7 @@ fun Seguridad(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = if (pinGuardado.isEmpty()) "Configurar PIN (4 dígitos)" else "PIN de Bóveda de Seguridad",
+                            text = if (!cacheSeguridad.tienePinConfigurado()) "Configurar PIN (4 dígitos)" else "PIN de Bóveda de Seguridad",
                             style = WiText.h4,
                             color = WiCss.tx1,
                             fontWeight = FontWeight.Bold
@@ -188,8 +194,8 @@ fun Seguridad(
                     WiButton(
                         text = "Desbloquear Bóveda de Seguridad",
                         onClick = {
-                            val hashedIngresado = Encriptar.hashPin(pinIngresado)
-                            if (pinIngresado == pinGuardado || hashedIngresado == pinGuardado) {
+                            val esValido = cacheSeguridad.validarPin(pinIngresado)
+                            if (esValido) {
                                 isDesbloqueado = true
                                 mensajePinError = null
                             } else {
@@ -260,9 +266,8 @@ fun Seguridad(
                                     text = "Confirmar y Restablecer PIN",
                                     onClick = {
                                         if (passReautenticacion.length >= 6) {
-                                            // Validar contraseña de cuenta exitosamente
-                                            store.save("pin_seguridad_boveda", "")
-                                            pinGuardado = ""
+                                            // Validar contraseña de cuenta exitosamente y resetear PIN
+                                            cacheSeguridad.restablecerPin()
                                             isDesbloqueado = true
                                             mostrarRecuperarPinModal = false
                                             mensajePinExito = "¡Identidad verificada! Crea tu nuevo PIN de 4 dígitos."
@@ -280,7 +285,7 @@ fun Seguridad(
                     }
                 } else {
                     Text(
-                        text = if (pinGuardado.isEmpty())
+                        text = if (!cacheSeguridad.tienePinConfigurado())
                             "Crea un PIN de 4 dígitos para proteger el acceso a la seguridad y tus llaves privadas en futuros ingresos:"
                         else "Bóveda autenticada. Puedes modificar tu PIN de 4 dígitos aquí:",
                         style = WiText.small,
@@ -290,7 +295,7 @@ fun Seguridad(
                     WiPassword(
                         value = pinIngresado,
                         onValueChange = { if (it.length <= 4) pinIngresado = it },
-                        label = if (pinGuardado.isEmpty()) "Nuevo PIN (4 dígitos)" else "Cambiar PIN (4 dígitos)",
+                        label = if (!cacheSeguridad.tienePinConfigurado()) "Nuevo PIN (4 dígitos)" else "Cambiar PIN (4 dígitos)",
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -306,9 +311,7 @@ fun Seguridad(
                         text = "Guardar PIN de Seguridad",
                         onClick = {
                             if (pinIngresado.length == 4) {
-                                val hashedPin = Encriptar.hashPin(pinIngresado)
-                                store.save("pin_seguridad_boveda", hashedPin)
-                                pinGuardado = hashedPin
+                                cacheSeguridad.guardarPin(pinIngresado, smileId)
                                 mensajePinExito = "¡PIN de 4 dígitos guardado correctamente!"
                                 mensajePinError = null
 
@@ -417,20 +420,23 @@ fun Seguridad(
                     WiButton(
                         text = "Guardar Bóveda de Claves",
                         onClick = {
-                            // 1. Guardar localmente con cifrado AES-256 (Encriptar.cifrar)
-                            store.saveSecure("mi_api_decolecta", tokenDecolecta.trim())
-                            store.saveSecure("mi_r2_cloudfire_key", r2AccessKey.trim())
-                            store.saveSecure("mi_r2_cloudfire_secret", r2SecretKey.trim())
-                            store.saveSecure("mi_gemini_key", geminiKey.trim())
-
-                            mensajeGuardadoBoveda = "¡Llaves API guardadas correctamente!"
+                            // 1. Guardar localmente con cifrado AES-256 en CacheSeguridad (wiSeguridad)
+                            val modeloSeguridad = (seguridadLocal ?: SeguridadModelo(userId = smileId)).copy(
+                                userId = smileId,
+                                apiDecolecta = tokenDecolecta.trim(),
+                                r2AccessKey = r2AccessKey.trim(),
+                                r2SecretKey = r2SecretKey.trim(),
+                                geminiKey = geminiKey.trim()
+                            )
+                            cacheSeguridad.guardarSeguridad(modeloSeguridad)
+                            mensajeGuardadoBoveda = "¡Llaves API guardadas con cifrado AES-256!"
 
                             // 2. Sincronizar cifrado con public.seguridad en Supabase
                             if (smileId.isNotBlank()) {
                                 scope.launch {
                                     cuentaApi.guardarSeguridadDSL(
                                         userId = smileId,
-                                        pinSeguridad = pinIngresado.ifBlank { "1234" },
+                                        pinSeguridad = seguridadLocal?.pinSeguridad ?: "1234",
                                         apiDecolecta = tokenDecolecta.trim(),
                                         r2AccessKey = r2AccessKey.trim(),
                                         r2SecretKey = r2SecretKey.trim(),
