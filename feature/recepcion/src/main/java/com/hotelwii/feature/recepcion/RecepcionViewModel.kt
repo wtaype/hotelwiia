@@ -228,20 +228,44 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun actualizarPrecioRapido(id: String, nuevoPrecio: Double) {
+    fun sugerirSiguienteHabitacion(): ModeloHabitacion {
+        val habs = _uiState.value.habitaciones
+        if (habs.isEmpty()) {
+            return ModeloHabitacion(numero = "101", piso = "Piso 1", tipo = "Matrimonial", precio = 80.0)
+        }
+
+        val numerosInt = habs.mapNotNull { it.numero.filter { c -> c.isDigit() }.toIntOrNull() }
+        val maxNumero = numerosInt.maxOrNull() ?: 100
+        val siguienteNumero = (maxNumero + 1).toString()
+
+        val primerDigito = siguienteNumero.firstOrNull()?.toString()?.toIntOrNull() ?: 1
+        val pisoSugerido = if (primerDigito in 1..9) "Piso $primerDigito" else "Piso 1"
+
+        val tipoSugerido = habs.lastOrNull()?.tipo ?: "Matrimonial"
+        val precioSugerido = habs.lastOrNull()?.precio ?: 80.0
+
+        return ModeloHabitacion(
+            numero = siguienteNumero,
+            piso = pisoSugerido,
+            tipo = tipoSugerido,
+            precio = precioSugerido
+        )
+    }
+
+    fun actualizarPrecioRapido(idOCodigo: String, nuevoPrecio: Double) {
         val empId = empresaId
         val listaActual = _uiState.value.habitaciones.toMutableList()
-        val index = listaActual.indexOfFirst { it.id == id }
+        val index = listaActual.indexOfFirst { it.id == idOCodigo || it.numero == idOCodigo }
         if (index < 0) return
 
         val habModificada = listaActual[index].copy(precio = nuevoPrecio)
         listaActual[index] = habModificada
 
-        // 1. LocalFirst instantáneo
+        // 1. LocalFirst instantáneo (0ms)
         _uiState.update {
             it.copy(
                 habitaciones = listaActual,
-                mensajeExito = "¡Precio actualizado a S/ ${String.format("%.2f", nuevoPrecio)} para Hab. ${habModificada.numero}!"
+                mensajeExito = "Precio actualizado a S/ ${String.format("%.0f", nuevoPrecio)} para habitación ${habModificada.numero}"
             )
         }
         cacheHabitacion.guardarListaHabitaciones(empId, listaActual)
@@ -252,9 +276,9 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun eliminarHabitacion(id: String) {
+    fun eliminarHabitacion(idOCodigo: String) {
         val empId = empresaId
-        val listaActual = _uiState.value.habitaciones.filterNot { it.id == id }
+        val listaActual = _uiState.value.habitaciones.filterNot { it.id == idOCodigo || it.numero == idOCodigo }
 
         // 1. LocalFirst instantáneo (< 1ms)
         _uiState.update {
@@ -267,7 +291,7 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
 
         // 2. Sync Supabase delete
         viewModelScope.launch {
-            api.eliminarHabitacion(id)
+            api.eliminarHabitacion(idOCodigo)
         }
     }
 
@@ -285,7 +309,7 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
     fun abrirCreacionHabitacion() {
         _uiState.update {
             it.copy(
-                habitacionSeleccionada = null,
+                habitacionSeleccionada = sugerirSiguienteHabitacion(),
                 mostrarFormularioHabitacion = true
             )
         }

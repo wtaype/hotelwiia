@@ -84,7 +84,7 @@ fun Fijo(
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Izquierda: Botón Circular [ ← Volver ]
@@ -104,36 +104,23 @@ fun Fijo(
                                 )
                             }
 
-                            // Centro: Título + Subtítulo
-                            Row(
+                            // Título y Subtítulo a la Izquierda (Left-Aligned)
+                            Column(
                                 modifier = Modifier.weight(1f),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalAlignment = Alignment.Start
                             ) {
-                                if (icono != null) {
-                                    Icon(
-                                        imageVector = icono,
-                                        contentDescription = null,
-                                        tint = WiCss.mco,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                }
-
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = titulo,
+                                    style = WiText.h4,
+                                    color = WiCss.tx1,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (subtitulo != null) {
                                     Text(
-                                        text = titulo,
-                                        style = WiText.h4,
-                                        color = WiCss.tx1,
-                                        fontWeight = FontWeight.Bold
+                                        text = subtitulo,
+                                        style = WiText.small,
+                                        color = WiCss.tx3
                                     )
-                                    if (subtitulo != null) {
-                                        Text(
-                                            text = subtitulo,
-                                            style = WiText.small,
-                                            color = WiCss.tx3
-                                        )
-                                    }
                                 }
                             }
 

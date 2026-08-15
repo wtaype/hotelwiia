@@ -206,9 +206,13 @@ fun Precios(
                             onEditar = { onEditarHabitacion(hab) },
                             onAjusteRapidoPrecio = { delta ->
                                 val nuevo = (hab.precio + delta).coerceAtLeast(10.0)
-                                hab.id?.let { onActualizarPrecioRapido(it, nuevo) }
+                                val idOCodigo = if (!hab.id.isNullOrBlank()) hab.id else hab.numero
+                                onActualizarPrecioRapido(idOCodigo, nuevo)
                             },
-                            onEliminar = { hab.id?.let { onEliminarHabitacion(it) } }
+                            onEliminar = {
+                                val idOCodigo = if (!hab.id.isNullOrBlank()) hab.id else hab.numero
+                                onEliminarHabitacion(idOCodigo)
+                            }
                         )
                     }
                 }
@@ -236,7 +240,7 @@ private fun TarjetaTarifaSmart(
             .padding(14.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            // Fila Superior: Datos de Cuarto + Precio + Acciones
+            // Fila Superior: Número de Cuarto + Precio + Acciones
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -249,7 +253,7 @@ private fun TarjetaTarifaSmart(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "Hab. ${habitacion.numero}",
+                            text = habitacion.numero,
                             style = WiText.h4,
                             color = WiCss.tx1,
                             fontWeight = FontWeight.Bold
@@ -266,10 +270,10 @@ private fun TarjetaTarifaSmart(
 
                 // Ajuste Rápido de Precio In-Place
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Botón - S/ 10
+                    // Botón -10
                     BotonAjuste(texto = "-10", onClick = { onAjusteRapidoPrecio(-10.0) })
 
                     // Badge Tarifa
@@ -287,10 +291,10 @@ private fun TarjetaTarifaSmart(
                         )
                     }
 
-                    // Botón + S/ 10
+                    // Botón +10
                     BotonAjuste(texto = "+10", onClick = { onAjusteRapidoPrecio(10.0) })
 
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(2.dp))
 
                     // Botón Editar
                     Box(
@@ -334,7 +338,6 @@ private fun TarjetaTarifaSmart(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (habitacion.conBano) BadgeAtributo("Baño Privado", WiIcons.Bathtub)
-                if (habitacion.conTv) BadgeAtributo("Smart TV", WiIcons.Tv)
                 if (habitacion.conDesayuno) BadgeAtributo("Desayuno", WiIcons.Coffee)
             }
         }
