@@ -22,7 +22,7 @@ object Wii {
     const val versionFile = "v$versionName"   // ⚡ Automático: Nombre de APKs y carpetas (v2.4.0)
     const val versionNotas = "Lanzamiento oficial v2.4.0: Habitación 104 (Suite Presidencial) agregada, Centro OTA optimizado y compilación ultra-rápida."
     const val isMandatory = false             // Actualización obligatoria sí/no
-    const val version = "v2"                  // Tag simplificado para Git / GitHub (ej. v1, v2)
+    const val version = "v1"                  // Tag simplificado para Git / GitHub (ej. v1, v2)
     const val dtema = "paz"
 
     /**
