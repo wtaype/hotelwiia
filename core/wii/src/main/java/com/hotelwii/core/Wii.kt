@@ -49,4 +49,5 @@ git tag -d v1 ; git tag v1 -m "Version v1 actualizada" ; git push origin v1 --fo
 
 // Actualizar versiones de seguridad [COMPILAR, INSTALAR Y EJECUTAR] (4)
 .\gradlew.bat assembleDebug ; adb install -r app/build/outputs/apk/debug/app-debug.apk ; adb shell am start -n com.hotelwii.app/.MainActivity;
+
 */
