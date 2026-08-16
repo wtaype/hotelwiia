@@ -11,8 +11,8 @@ android {
         applicationId = "com.hotelwii.app"
         minSdk = 29
         targetSdk = 36
-        versionCode = 20400
-        versionName = "2.4.0"
+        versionCode = 20500
+        versionName = "2.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

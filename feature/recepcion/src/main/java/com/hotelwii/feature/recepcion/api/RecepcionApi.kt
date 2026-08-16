@@ -15,11 +15,19 @@ object RecepcionApi {
     private val client get() = HotelWiiSupabase.instancia
 
     // 🏨 HABITACIONES
-    suspend fun obtenerHabitaciones(empresaId: String): Result<List<ModeloHabitacion>> = withContext(Dispatchers.IO) {
-        if (empresaId.isBlank()) return@withContext Result.success(emptyList())
+    suspend fun obtenerHabitaciones(empresaId: String, smileId: String = ""): Result<List<ModeloHabitacion>> = withContext(Dispatchers.IO) {
+        if (empresaId.isBlank() && smileId.isBlank()) return@withContext Result.success(emptyList())
         try {
             val lista = client.postgrest["habitaciones"]
-                .select { filter { eq("empresa_id", empresaId) } }
+                .select {
+                    filter {
+                        if (empresaId.isNotBlank()) {
+                            eq("empresa_id", empresaId)
+                        } else {
+                            eq("userId", smileId)
+                        }
+                    }
+                }
                 .decodeList<ModeloHabitacion>()
             Result.success(lista)
         } catch (e: Exception) {

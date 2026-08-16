@@ -54,10 +54,20 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
 
     init {
         cargarDatosLocalFirst()
+
+        // 🔄 Reactividad en tiempo real: Si cambia la empresa activa, recargar el catálogo automáticamente
+        viewModelScope.launch {
+            cacheEmpresa.empresaActivaFlow.collect { empresa ->
+                if (empresa != null && !empresa.id.isNullOrBlank()) {
+                    cargarDatosLocalFirst()
+                }
+            }
+        }
     }
 
     fun cargarDatosLocalFirst(isRefreshManual: Boolean = false) {
         val empId = empresaId
+        val sId = smileId
         val habsCache = cacheHabitacion.obtenerListaHabitaciones(empId)
         val ventasCache = cacheVentas.obtenerVentasActivas(empId)
 
@@ -70,27 +80,45 @@ class RecepcionViewModel(application: Application) : AndroidViewModel(applicatio
         }
 
         // Sincronización en segundo plano con Supabase
-        if (empId.isNotBlank()) {
-            viewModelScope.launch {
-                val resHabs = api.obtenerHabitaciones(empId)
-                resHabs.onSuccess { listaRemota ->
-                    cacheHabitacion.guardarListaHabitaciones(empId, listaRemota)
-                    _uiState.update { it.copy(habitaciones = listaRemota, isRefreshing = false) }
-                }
+        viewModelScope.launch {
+            var activeEmpId = empId
 
-                val resVentas = api.obtenerVentasActivas(empId)
+            // ⚡ Auto-resolución si la tablet recién inicia sesión y no tiene empresa local
+            if (activeEmpId.isBlank() && sId.isNotBlank()) {
+                val resEmp = com.hotelwii.feature.empresas.api.EmpresasApi.obtenerEmpresasPorSmile(sId)
+                resEmp.onSuccess { lista ->
+                    cacheEmpresa.guardarListaEmpresas(sId, lista)
+                    val activa = cacheEmpresa.obtenerEmpresaActiva(sId)
+                        ?: lista.firstOrNull { it.principal }
+                        ?: lista.firstOrNull()
+                    if (activa != null && !activa.id.isNullOrBlank()) {
+                        activeEmpId = activa.id ?: ""
+                        cacheEmpresa.guardarEmpresaActiva(activa, sId)
+                    }
+                }
+            }
+
+            // Descarga de habitaciones (con filtro dual por empresaId o smileId)
+            val resHabs = api.obtenerHabitaciones(activeEmpId, sId)
+            resHabs.onSuccess { listaRemota ->
+                cacheHabitacion.guardarListaHabitaciones(activeEmpId, listaRemota)
+                _uiState.update { it.copy(habitaciones = listaRemota, isRefreshing = false) }
+            }
+
+            if (activeEmpId.isNotBlank()) {
+                val resVentas = api.obtenerVentasActivas(activeEmpId)
                 resVentas.onSuccess { listaVentas ->
-                    cacheVentas.guardarVentasActivas(empId, listaVentas)
+                    cacheVentas.guardarVentasActivas(activeEmpId, listaVentas)
                     _uiState.update { it.copy(ventasActivas = listaVentas, isRefreshing = false) }
                 }
 
-                val resReservas = api.obtenerReservas(empId)
+                val resReservas = api.obtenerReservas(activeEmpId)
                 resReservas.onSuccess { listaReservas ->
                     _uiState.update { it.copy(reservas = listaReservas, isRefreshing = false) }
                 }
+            } else {
+                _uiState.update { it.copy(isRefreshing = false) }
             }
-        } else {
-            _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 

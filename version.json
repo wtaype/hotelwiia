@@ -1,8 +1,8 @@
 {
-    "versionCode":  20400,
-    "versionName":  "2.4.0",
-    "apkUrl":  "https://hotelwii.amorwii.com/v2.4.0.apk",
-    "sha256":  "db91f9e0002698e3a53a2cf749819caf08dbd2d008ccd9530dd60ab8f0f0ab9c",
-    "releaseNotes":  "Lanzamiento oficial v2.4.0: Habitación 104 (Suite Presidencial) agregada, Centro OTA optimizado y compilación ultra-rápida.",
+    "versionCode":  20500,
+    "versionName":  "2.5.0",
+    "apkUrl":  "https://hotelwii.amorwii.com/v2.5.0.apk",
+    "sha256":  "1f42ed64dfe61bef6572761a02c15704e18b7c9a78d62cdafdfc742e7a816dbe",
+    "releaseNotes":  "Lanzamiento oficial v2.5.0: Compilacion super profesional.",
     "isMandatory":  false
 }
